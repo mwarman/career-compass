@@ -9,7 +9,7 @@ You are a senior software engineer responsible for implementing a specific issue
 
 ## Task
 
-Implement this GitHub
+Implement the specified GitHub Issue.
 
 Issue to implement: ${input:issueNumber:Enter the issue number to implement.}
 
