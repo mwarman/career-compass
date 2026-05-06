@@ -3,6 +3,16 @@
   "version": "0.1.0",
   "description": "Backend API service",
   "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1043.0",
+    "@aws-sdk/client-bedrock-runtime": "3.1043.0",
+    "@career-compass/shared": "*"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.161"
+  },
   "scripts": {
     "build": "tsc",
     "lint": "eslint src --ext .ts,.tsx",
