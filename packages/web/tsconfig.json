@@ -3,8 +3,10 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "lib": ["ES2022", "dom", "dom.iterable"]
+    "lib": ["ES2022", "dom", "dom.iterable"],
+    "jsx": "react-jsx"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
