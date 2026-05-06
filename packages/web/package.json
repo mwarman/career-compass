@@ -4,9 +4,9 @@
   "description": "Frontend web application",
   "private": true,
   "scripts": {
-    "build": "echo \"Build script not yet implemented\"",
-    "lint": "echo \"Lint script not yet implemented\"",
+    "build": "tsc",
+    "lint": "eslint src --ext .ts,.tsx",
     "test": "echo \"Test script not yet implemented\"",
-    "clean": "echo \"Clean script not yet implemented\""
+    "clean": "rimraf dist"
   }
 }
