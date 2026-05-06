@@ -8,20 +8,20 @@
 
 ## Milestone Summary
 
-| #  | Milestone                        | Description                                                              | Issues | Depends On |
-|----|----------------------------------|--------------------------------------------------------------------------|--------|------------|
-| M1 | Monorepo Foundation              | Workspace root, package scaffolding, shared tooling, CI skeleton         | 5      | —          |
-| M2 | Shared Schema Package            | Zod schemas for recommendation output and API contracts; shared types    | 3      | M1         |
-| M3 | Storage Stack                    | DynamoDB table, TTL config, CDK StorageStack                             | 2      | M1         |
-| M4 | Conversation Handler — Core      | Lambda handler: session init, turn routing, DynamoDB read/write          | 4      | M2, M3     |
-| M5 | Bedrock Integration              | Converse API turns, phase-aware prompt selection, synthesis forced tool use | 5   | M4         |
-| M6 | API Stack                        | CDK ApiStack: API Gateway, Lambda, IAM/Bedrock permissions               | 3      | M5         |
-| M7 | Frontend — Conversation UI       | React chat interface, session state, turn submission, phase display       | 5      | M6         |
-| M8 | Frontend — Recommendation Artifact | Structured recommendation rendering, synthesis trigger UX              | 3      | M7         |
-| M9 | Frontend Stack                   | CDK FrontendStack: S3, CloudFront, bucket deployment                     | 2      | M8         |
-| M10 | Observability Stack             | CDK ObservabilityStack: CloudWatch dashboard, alarms, log groups         | 3      | M6         |
-| M11 | CI/CD Workflows                 | GitHub Actions: CI, Deploy, Teardown workflows                           | 3      | M9, M10    |
-| M12 | Prompt Tuning & Integration QA  | Iterative prompt refinement across phases; end-to-end conversation QA    | 3      | M11        |
+| #   | Milestone                          | Description                                                                 | Issues | Depends On |
+| --- | ---------------------------------- | --------------------------------------------------------------------------- | ------ | ---------- |
+| M1  | Monorepo Foundation                | Workspace root, package scaffolding, shared tooling, CI skeleton            | 5      | —          |
+| M2  | Shared Schema Package              | Zod schemas for recommendation output and API contracts; shared types       | 3      | M1         |
+| M3  | Storage Stack                      | DynamoDB table, TTL config, CDK StorageStack                                | 2      | M1         |
+| M4  | Conversation Handler — Core        | Lambda handler: session init, turn routing, DynamoDB read/write             | 4      | M2, M3     |
+| M5  | Bedrock Integration                | Converse API turns, phase-aware prompt selection, synthesis forced tool use | 5      | M4         |
+| M6  | API Stack                          | CDK ApiStack: API Gateway, Lambda, IAM/Bedrock permissions                  | 3      | M5         |
+| M7  | Frontend — Conversation UI         | React chat interface, session state, turn submission, phase display         | 5      | M6         |
+| M8  | Frontend — Recommendation Artifact | Structured recommendation rendering, synthesis trigger UX                   | 3      | M7         |
+| M9  | Frontend Stack                     | CDK FrontendStack: S3, CloudFront, bucket deployment                        | 2      | M8         |
+| M10 | Observability Stack                | CDK ObservabilityStack: CloudWatch dashboard, alarms, log groups            | 3      | M6         |
+| M11 | CI/CD Workflows                    | GitHub Actions: CI, Deploy, Teardown workflows                              | 3      | M9, M10    |
+| M12 | Prompt Tuning & Integration QA     | Iterative prompt refinement across phases; end-to-end conversation QA       | 3      | M11        |
 
 ---
 
@@ -161,6 +161,7 @@ Create GitHub Milestones M1–M12. Create labels: `effort:S`, `effort:M`, `effor
 Design and implement the Zod schema for the `generate_recommendation` tool output. This schema is the authoritative definition — the Bedrock tool input schema will be derived from it, and the frontend will type-check against its inferred TypeScript type.
 
 Schema must capture:
+
 - Inferred profile summary (string)
 - Identified skill gaps (prioritized array: gap name, severity, rationale)
 - Recommended learning areas (array: area name, rationale tied to a goal, suggested resource/cert categories, estimated effort, estimated timeline)
@@ -184,6 +185,7 @@ Keep field names explicit and descriptive — this JSON will be rendered directl
 Define Zod schemas for the conversation API's single endpoint:
 
 **Request:** `POST /conversation/turn`
+
 ```typescript
 {
   sessionId?: string;      // absent on first turn
@@ -192,6 +194,7 @@ Define Zod schemas for the conversation API's single endpoint:
 ```
 
 **Response (conversational turn):**
+
 ```typescript
 {
   sessionId: string;
@@ -203,12 +206,13 @@ Define Zod schemas for the conversation API's single endpoint:
 ```
 
 **Response (synthesis turn):**
+
 ```typescript
 {
   sessionId: string;
   phase: 'synthesis';
   turnCount: number;
-  recommendation: Recommendation;  // from M2-01
+  recommendation: Recommendation; // from M2-01
 }
 ```
 
@@ -257,6 +261,7 @@ Use `zod-to-json-schema` or equivalent. The output of this function is what gets
 Design the DynamoDB session item structure and implement the `StorageStack` CDK construct.
 
 **Session item shape:**
+
 ```typescript
 {
   sessionId: string;        // PK (partition key)
@@ -315,9 +320,10 @@ Use `@aws-sdk/client-dynamodb` with `@aws-sdk/lib-dynamodb` (DynamoDB DocumentCl
 ### Issue M4-01: Implement Lambda handler entry point and request routing
 
 **Description:**  
-Implement the Lambda handler (`packages/api/src/handlers/conversation.handler.ts`) as the entry point for `POST /conversation/turn`. 
+Implement the Lambda handler (`packages/api/src/handlers/conversation.handler.ts`) as the entry point for `POST /conversation/turn`.
 
 Routing logic:
+
 - Parse and validate request body using `TurnRequestSchema` (from M2-02); return 400 on validation failure
 - If `sessionId` absent → first turn: create new session, proceed with seed processing
 - If `sessionId` present → subsequent turn: load session from DynamoDB; return 404 if not found
@@ -345,6 +351,7 @@ Keep the handler thin — validation, routing, error serialization only. All bus
 Implement `packages/api/src/services/conversation.service.ts`. This service orchestrates a conversation turn: loads session state, determines the active phase, calls Bedrock (stubbed in this milestone), evaluates synthesis readiness, advances phase if appropriate, persists updated state, and returns the response payload.
 
 **Phase transition rules:**
+
 - `discovery` → `goalElicitation`: when turn count reaches a threshold (configurable, default 3) AND system self-evaluation deems skill context sufficient (evaluated by Bedrock — stub returns false in this milestone)
 - `goalElicitation` → `synthesis`: user message contains synthesis trigger phrase OR turn count reaches max (10) OR Bedrock self-eval returns ready
 - Any phase → `synthesis`: user sends trigger phrase
@@ -542,6 +549,7 @@ Capture one complete conversation log (anonymized seed input acceptable) as a re
 Implement `infra/lib/stacks/api-stack.ts`. The stack receives the DynamoDB table name as a prop (cross-stack reference from `StorageStack` output).
 
 CDK construct includes:
+
 - Lambda function pointing to `packages/api` bundle output; env vars: `TABLE_NAME`, `BEDROCK_REGION`, `MODEL_ID`, `MAX_TURNS`
 - API Gateway REST API with `POST /conversation/turn` resource
 - Lambda integration on the POST method
@@ -640,7 +648,11 @@ Implement the client-side session state using React Context (or Zustand if prefe
   phase: ConversationPhase;
   turnCount: number;
   synthesisReady: boolean;
-  messages: { role: 'user' | 'assistant'; content: string }[];
+  messages: {
+    role: 'user' | 'assistant';
+    content: string;
+  }
+  [];
   recommendation: Recommendation | null;
 }
 ```
@@ -669,6 +681,7 @@ Implement the Axios-based API client and a `useSubmitTurn` TanStack Query mutati
 API client: Axios instance configured with `baseURL` from `VITE_API_BASE_URL`, default headers, and a response interceptor that maps HTTP error codes to typed application errors.
 
 `useSubmitTurn` mutation:
+
 - Reads `sessionId` from session context (null on first turn)
 - Posts `{ sessionId?, userMessage }` to `POST /conversation/turn`
 - On success: updates session context with returned `sessionId`, `phase`, `turnCount`, `synthesisReady`, and appends messages
@@ -745,6 +758,7 @@ Implement the seed input experience for first-turn session cold-start, and the c
 Implement `packages/web/src/components/RecommendationPanel.tsx`. Renders the full `Recommendation` object in a structured, readable layout.
 
 Sections:
+
 1. **Profile Summary** — prose paragraph
 2. **Skill Gaps** — prioritized list with severity badge per gap and rationale
 3. **Recommendations** — card-per-recommendation layout showing: area name, rationale, resource categories, estimated effort, estimated timeline
@@ -818,6 +832,7 @@ Also test edge cases: page refresh (new session), Start Over mid-conversation, m
 Implement `infra/lib/stacks/frontend-stack.ts`. The stack receives the API Gateway URL as a prop (from `ApiStack` `CfnOutput`).
 
 CDK construct:
+
 - S3 bucket (private, no static website hosting — CloudFront OAC access only)
 - CloudFront distribution with S3 origin using Origin Access Control (OAC, not legacy OAI)
 - Default root object: `index.html`
@@ -893,6 +908,7 @@ Group widgets by concern: API health, AI inference, storage, cost indicators.
 Create CloudWatch alarms that fire on cost-bearing anomalies. For a portfolio project, these are budget protection signals, not SLOs.
 
 Alarms:
+
 - Lambda error rate > 10% over 5 minutes → SNS notification (email)
 - Lambda invocation count > 500/day → SNS notification (unusual usage volume for a portfolio demo)
 - Bedrock invocation count > 200/day → SNS notification
@@ -917,6 +933,7 @@ SNS topic with email subscription. Email address sourced from CDK context, not h
 Add CloudWatch Logs Insights query widgets to the dashboard to surface conversation-level observability from the structured logs implemented in M4-03.
 
 Queries:
+
 - Average turn duration (ms) over last 24 hours
 - Count of synthesis turns (phase = synthesis completions)
 - Error count by error type over last 24 hours
@@ -1063,6 +1080,7 @@ Document each scenario result in `docs/qa-results-m12.md`.
 Write the final `README.md` at the repo root. Target audience: portfolio evaluators and potential clients reviewing the GitHub repository.
 
 Sections:
+
 - Project summary (2-3 sentences)
 - Architecture diagram (embed Mermaid or PNG export)
 - Technology stack table
