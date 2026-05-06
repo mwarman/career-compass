@@ -3,10 +3,26 @@
   "version": "0.1.0",
   "description": "Infrastructure and deployment configuration",
   "private": true,
+  "type": "module",
+  "bin": {
+    "career-compass-cdk": "dist/index.js"
+  },
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "cdk": "cdk",
+    "cdk:synth": "cdk synth",
+    "cdk:deploy": "cdk deploy",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "echo \"Test script not yet implemented\"",
     "clean": "rimraf dist cdk.out"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.252.0",
+    "constructs": "10.6.0"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.1121.0",
+    "@types/node": "25.6.0"
   }
 }
