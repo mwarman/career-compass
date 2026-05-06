@@ -1,0 +1,29 @@
+{
+  "name": "career-compass",
+  "version": "0.1.0",
+  "description": "A conversational AI application that guides professionals through a structured but adaptive multi-turn dialogue to assess their current skills, surface career goals, identify skill gaps, and produce a prioritized upskilling recommendation.",
+  "keywords": ["ai", "aws", "bedrock", "lambda", "typescript"],
+  "author": "Matthew Warman",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mwarman/career-compass.git"
+  },
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=24.15.0 <25",
+    "npm": ">=11.12.1 <12"
+  },
+  "workspaces": [
+    "packages/shared",
+    "packages/api",
+    "packages/web",
+    "infra"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present"
+  }
+}
