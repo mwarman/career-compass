@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true
+  },
+  "include": ["eslint.config.js", "packages/**/src", "infra/src"],
+  "ts-node": {
+    "transpileOnly": true
+  }
+}
