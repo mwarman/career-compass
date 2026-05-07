@@ -32,7 +32,7 @@ Cross-package imports use the `@career-compass/*` scope and workspace resolution
 
 - **Module Targets**: Target ES2022 language features and ESNext modules. Use proper module resolution (`bundler` strategy).
 
-- **Naming Conventions**: Use camelCase for variables and functions, PascalCase for types and components. Prefix unused parameters with underscore (e.g., `_unused`).
+- **Naming Conventions**: Use camelCase for variables and functions, PascalCase for types and components. Prefix unused parameters with underscore (e.g., `_unused`). Use kebab-case for file names (e.g., `conversation-handler.ts`).
 
 - **Import Organization**: Order imports as (1) Node.js builtins, (2) third-party packages, (3) internal imports, (4) relative paths. Use absolute imports via `@career-compass/*` scope for cross-package references and `@/*` for web package internal paths.
 
@@ -101,6 +101,8 @@ Cross-package imports use the `@career-compass/*` scope and workspace resolution
 - **Testing Framework**: Use Jest for all unit tests. Configure test patterns to include files matching `*.test.ts`, `*.spec.ts`, and `__tests__` directories.
 
 - **Test Scope**: Focus on unit tests that validate business logic and edge cases. Test API handlers with mocked AWS SDK clients. Test React components with React Testing Library. Do not write end-to-end tests; these are out of scope for this project.
+
+- **Test Approach**: Follow AAA (Arrange, Act, Assert) pattern in tests. Arrange necessary preconditions and inputs, act on the system under test, and assert expected outcomes. Keep tests focused and avoid testing multiple behaviors in a single test case.
 
 - **Mocking Strategy**: Mock external dependencies (AWS SDK clients, Bedrock API, HTTP calls) using Jest's `jest.mock()`. Create realistic mock responses that match actual API schemas. Validate that mocks are called with expected arguments.
 
