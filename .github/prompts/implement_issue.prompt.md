@@ -20,5 +20,6 @@ Do the following to implement the issue:
 - Create a step-by-step breakdown of the tasks required to implement the issue, including any necessary code changes, tests, and documentation updates.
 - Ask any clarifying questions if the issue description is not clear or if you need more information to proceed with the implementation.
 - After task planning, ask me if you should proceed with: A) a one-shot impelementation OR B) a step-by-step implementation where you wait for confirmation before proceeding to each step.
+- After implementation, ensure that code changes are properly tested, documented where appropriate, and the project builds, lints, and passes all tests successfully.
 
 Follow all project instructions and guidelines for code style, testing, and documentation. Make sure to handle edge cases and provide error handling where appropriate.
