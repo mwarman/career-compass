@@ -14,7 +14,7 @@ export default [
     ],
   },
   js.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.recommended,
   {
     files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
     rules: {
