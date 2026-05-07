@@ -17,3 +17,6 @@ export {
   type SynthesisResponse,
   type TurnResponse,
 } from './schemas/api-schema';
+
+// Export Bedrock tool schema utilities
+export { getRecommendationToolSchema } from './utils/bedrock-tool-schema';
