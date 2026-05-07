@@ -10,6 +10,7 @@ export default [
       '**/build/**',
       '**/coverage/**',
       'eslint.config.js',
+      '**/jest.config.ts',
       '**/components/shadcn/*.tsx',
     ],
   },
