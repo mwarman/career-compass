@@ -32,7 +32,7 @@ Cross-package imports use the `@career-compass/*` scope and workspace resolution
 
 - **Module Targets**: Target ES2022 language features and ESNext modules. Use proper module resolution (`bundler` strategy).
 
-- **Naming Conventions**: Use camelCase for variables and functions, PascalCase for types and components. Prefix unused parameters with underscore (e.g., `_unused`).
+- **Naming Conventions**: Use camelCase for variables and functions, PascalCase for types and components. Prefix unused parameters with underscore (e.g., `_unused`). Use kebab-case for file names (e.g., `conversation-handler.ts`).
 
 - **Import Organization**: Order imports as (1) Node.js builtins, (2) third-party packages, (3) internal imports, (4) relative paths. Use absolute imports via `@career-compass/*` scope for cross-package references and `@/*` for web package internal paths.
 
