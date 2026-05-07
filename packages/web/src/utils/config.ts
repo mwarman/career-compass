@@ -19,7 +19,7 @@ export type Config = z.infer<typeof configSchema>;
  * Parse and validate environment variables from Vite.
  * Throws an error if validation fails, ensuring fail-fast behavior on app load.
  */
-function parseConfig(): Config {
+const parseConfig = (): Config => {
   const raw = {
     apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
     mode: import.meta.env.MODE,
@@ -33,7 +33,7 @@ function parseConfig(): Config {
   }
 
   return result.data;
-}
+};
 
 /**
  * Singleton config instance.

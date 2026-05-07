@@ -23,7 +23,7 @@ export type Config = z.infer<typeof configSchema>;
  * Parse and validate environment variables.
  * Throws an error if validation fails, ensuring fail-fast behavior on cold start.
  */
-function parseConfig(): Config {
+const parseConfig = (): Config => {
   const raw = {
     dynamodbTableName: process.env.DYNAMODB_TABLE_NAME,
     bedrockRegion: process.env.BEDROCK_REGION,
@@ -39,7 +39,7 @@ function parseConfig(): Config {
   }
 
   return result.data;
-}
+};
 
 /**
  * Singleton config instance.
