@@ -5,3 +5,15 @@ export {
   type SkillGap,
   type RecommendedArea,
 } from './schemas/recommendation-schema';
+
+// Export API schemas and types
+export {
+  TurnRequestSchema,
+  ConversationalResponseSchema,
+  SynthesisResponseSchema,
+  TurnResponseSchema,
+  type TurnRequest,
+  type ConversationalResponse,
+  type SynthesisResponse,
+  type TurnResponse,
+} from './schemas/api-schema';
