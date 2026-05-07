@@ -1,4 +1,4 @@
-# Environment Variables Guide
+# Configuration Guide
 
 This guide describes how environment variables flow through the Career Compass application across local development and deployed environments.
 
