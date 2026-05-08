@@ -89,7 +89,7 @@ describe('StorageStack', () => {
 
     it('should have RemovalPolicy.DESTROY set for portfolio ephemeral design', () => {
       const template = cdk.assertions.Template.fromStack(stack);
-      template.hasResourceProperties('AWS::DynamoDB::Table', {
+      template.hasResource('AWS::DynamoDB::Table', {
         DeletionPolicy: 'Delete',
       });
     });
@@ -98,8 +98,7 @@ describe('StorageStack', () => {
       const template = cdk.assertions.Template.fromStack(stack);
       template.hasResourceProperties('AWS::DynamoDB::Table', {
         SSESpecification: {
-          Enabled: true,
-          SSEType: 'KMS',
+          SSEEnabled: true,
         },
       });
     });

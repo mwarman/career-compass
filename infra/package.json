@@ -14,15 +14,19 @@
     "cdk:synth": "cdk synth",
     "cdk:deploy": "cdk deploy",
     "lint": "eslint src --ext .ts,.tsx",
-    "test": "echo \"Test script not yet implemented\"",
-    "clean": "rimraf dist cdk.out"
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "clean": "rimraf coverage dist cdk.out"
   },
   "dependencies": {
     "aws-cdk-lib": "2.253.0",
     "constructs": "10.6.0"
   },
   "devDependencies": {
+    "@types/jest": "30.0.0",
+    "@types/node": "25.6.0",
     "aws-cdk": "2.1121.0",
-    "@types/node": "25.6.0"
+    "jest": "30.3.0",
+    "ts-jest": "29.4.9"
   }
 }
