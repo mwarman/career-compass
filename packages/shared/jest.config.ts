@@ -4,7 +4,7 @@ const config: Config = {
   displayName: 'shared',
   preset: 'ts-jest',
   testEnvironment: 'node',
-  rootDir: './src',
+  rootDir: '.',
   testMatch: ['**/__tests__/**/*.ts', '**/*.test.ts', '**/*.spec.ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   collectCoverageFrom: ['**/*.ts', '!**/*.d.ts', '!**/node_modules/**', '!**/dist/**'],
