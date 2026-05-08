@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { RecommendationSchema } from './recommendation-schema';
+import { ConversationPhaseSchema } from './session-schema';
 
 /**
  * Schema for a conversation API turn request.
@@ -33,11 +34,7 @@ export const ConversationalResponseSchema = z.object({
     .string()
     .min(1, 'Assistant message must not be empty')
     .describe('Assistant response for this conversation turn'),
-  phase: z
-    .enum(['discovery', 'goalElicitation', 'synthesis'], {
-      message: 'Phase must be one of: discovery, goalElicitation, synthesis',
-    })
-    .describe('Current phase of the conversation state machine'),
+  phase: ConversationPhaseSchema.describe('Current phase of the conversation state machine'),
   turnCount: z
     .number()
     .int()
@@ -58,7 +55,9 @@ export const SynthesisResponseSchema = z.object({
     .string()
     .min(1, 'Session ID must not be empty')
     .describe('Unique identifier for the conversation session'),
-  phase: z.literal('synthesis').describe('Confirmation that this is the synthesis phase response'),
+  phase: ConversationPhaseSchema.refine((p) => p === 'synthesis', {
+    message: 'Synthesis response phase must be synthesis',
+  }).describe('Confirmation that this is the synthesis phase response'),
   turnCount: z
     .number()
     .int()

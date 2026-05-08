@@ -16,7 +16,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist coverage"
   },
   "dependencies": {
     "zod": "4.4.3"
