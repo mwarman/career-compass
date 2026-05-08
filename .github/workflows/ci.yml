@@ -39,3 +39,6 @@ jobs:
 
       - name: Run tests
         run: npm run test:coverage
+
+      - name: Synthesize AWS CDK infrastructure
+        run: npm run cdk:synth --workspace infra
