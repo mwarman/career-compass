@@ -18,5 +18,15 @@ export {
   type TurnResponse,
 } from './schemas/api-schema';
 
+// Export session state schemas and types
+export {
+  ConversationPhaseSchema,
+  BedrockMessageSchema,
+  SessionStateSchema,
+  type ConversationPhase,
+  type BedrockMessage,
+  type SessionState,
+} from './schemas/session-schema';
+
 // Export Bedrock tool schema utilities
 export { getRecommendationToolSchema } from './utils/bedrock-tool-schema';
