@@ -1,11 +1,13 @@
 import * as cdk from 'aws-cdk-lib';
 
+import { StorageStack } from './stacks/storage-stack.js';
+
 const app = new cdk.App();
 
-// Placeholder stack - will be populated with actual resources in future milestones
-const placeholderStack = new cdk.Stack(app, 'CareerCompassPlaceholder', {
-  description: 'Placeholder stack for Career Compass infrastructure',
+// M3: Storage Stack - DynamoDB table for session state persistence
+const storageStack = new StorageStack(app, 'CareerCompassStorageStack', {
+  description: 'Storage stack: DynamoDB table for session state persistence',
 });
 
-// Export the placeholder stack so TypeScript doesn't complain about unused variable
-export { placeholderStack };
+// Export the storage stack so it can be referenced by other stacks
+export { storageStack };
