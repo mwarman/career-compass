@@ -37,7 +37,9 @@ export class StorageStack extends cdk.Stack {
       // Portfolio project: all resources are ephemeral, including data
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       // Enable point-in-time recovery for data protection (optional, can be disabled for cost savings)
-      pointInTimeRecovery: false,
+      pointInTimeRecoverySpecification: {
+        pointInTimeRecoveryEnabled: false,
+      },
       // Encryption at rest (AWS managed by default)
       encryption: dynamodb.TableEncryption.AWS_MANAGED,
     });
