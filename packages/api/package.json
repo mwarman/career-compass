@@ -8,8 +8,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint src --ext .ts,.tsx",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test": "jest --silent",
+    "test:coverage": "jest --coverage --silent",
     "clean": "rimraf coverage dist"
   },
   "dependencies": {
