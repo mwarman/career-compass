@@ -137,8 +137,8 @@ CDK context values (in `cdk.json`) control deployment behavior:
 ```json
 {
   "context": {
-    "bedrockRegion": "us-west-2",
-    "bedrockModelId": "anthropic.claude-3-5-haiku-20241022-v1:0",
+    "bedrockRegion": "us-east-1",
+    "bedrockModelId": "anthropic.claude-haiku-4-5-20251001-v1:0",
     "tableName": "career-compass-conversations",
     "ttlDays": 7
   }
