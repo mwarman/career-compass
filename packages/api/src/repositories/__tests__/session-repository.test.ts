@@ -6,6 +6,7 @@ import { RepositoryError } from '../repository-error';
 jest.mock('@aws-sdk/client-dynamodb');
 jest.mock('@aws-sdk/lib-dynamodb');
 jest.mock('../../utils/config');
+jest.mock('../../utils/logger');
 
 // Setup mocks before requiring the module
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports

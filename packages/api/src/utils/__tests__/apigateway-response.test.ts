@@ -3,7 +3,7 @@
  * Tests all response builder functions and CORS header inclusion.
  */
 
-import { ok, created, badRequest, notFound, internalServerError } from '../apigateway-response';
+import { ok, created, badRequest, notFound, internalServerError, errorResponse } from '../apigateway-response';
 
 describe('apigateway-response', () => {
   describe('CORS headers', () => {
@@ -263,6 +263,106 @@ describe('apigateway-response', () => {
 
       const parsed = JSON.parse(response.body);
       expect(parsed.message).toBe(responseData.message);
+    });
+  });
+
+  describe('errorResponse()', () => {
+    // Type definition for testing purposes
+    interface TypedError extends Error {
+      statusCode: number;
+      details?: unknown;
+      sessionId?: string;
+    }
+    it('should map 400 status code with message', () => {
+      const error = {
+        name: 'ValidationError',
+        message: 'Request validation failed',
+        statusCode: 400,
+      } as unknown as TypedError;
+
+      const response = errorResponse(error);
+
+      expect(response.statusCode).toBe(400);
+      const body = JSON.parse(response.body);
+      expect(body.error).toBe('Request validation failed');
+    });
+
+    it('should map 404 status code with message', () => {
+      const error = {
+        name: 'SessionNotFoundError',
+        message: 'Session not found: session-123',
+        statusCode: 404,
+        sessionId: 'session-123',
+      } as unknown as TypedError;
+
+      const response = errorResponse(error);
+
+      expect(response.statusCode).toBe(404);
+      const body = JSON.parse(response.body);
+      expect(body.error).toBe('Session not found: session-123');
+    });
+
+    it('should not leak 5xx error details', () => {
+      const error = {
+        name: 'RepositoryError',
+        message: 'Database connection failed: credential mismatch',
+        statusCode: 500,
+        operation: 'putItem',
+      } as unknown as TypedError;
+
+      const response = errorResponse(error);
+
+      expect(response.statusCode).toBe(500);
+      const body = JSON.parse(response.body);
+      expect(body.error).toBe('Internal server error');
+      expect(body).not.toHaveProperty('details');
+    });
+
+    it('should include details for 4xx errors when provided', () => {
+      const details = [
+        { path: 'userMessage', message: 'Required' },
+        { path: 'sessionId', message: 'Invalid format' },
+      ];
+      const error = {
+        name: 'ValidationError',
+        message: 'Request validation failed',
+        statusCode: 400,
+        details,
+      } as unknown as TypedError;
+
+      const response = errorResponse(error);
+
+      expect(response.statusCode).toBe(400);
+      const body = JSON.parse(response.body);
+      expect(body.error).toBe('Request validation failed');
+      expect(body.details).toEqual(details);
+    });
+
+    it('should include CORS headers', () => {
+      const error = {
+        name: 'ValidationError',
+        message: 'Invalid input',
+        statusCode: 400,
+      } as unknown as TypedError;
+
+      const response = errorResponse(error);
+
+      expect(response.headers['Access-Control-Allow-Origin']).toBe('*');
+      expect(response.headers['Content-Type']).toBe('application/json');
+    });
+
+    it('should omit details for 4xx when not provided', () => {
+      const error = {
+        name: 'SessionNotFoundError',
+        message: 'Session not found',
+        statusCode: 404,
+      } as unknown as TypedError;
+
+      const response = errorResponse(error);
+
+      const body = JSON.parse(response.body);
+      expect(body).not.toHaveProperty('details');
+      expect(Object.keys(body)).toEqual(['error']);
     });
   });
 });
