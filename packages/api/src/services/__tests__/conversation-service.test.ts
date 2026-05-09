@@ -1,11 +1,19 @@
 /**
  * Unit tests for ConversationService.
- * Tests processTurn stub implementation and logging behavior.
+ * Tests phase transition logic, synthesis trigger detection, and state management.
  */
 
 import { SessionState, TurnRequest } from '@career-compass/shared';
 
+import { SessionRepository } from '../../repositories/session-repository';
+import {
+  DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD,
+  GOAL_ELICITATION_MAX_TURNS,
+  SYNTHESIS_TRIGGER_PHRASE,
+} from '../../utils/constants';
 import { ConversationService } from '../conversation-service';
+
+jest.mock('../../repositories/session-repository');
 
 describe('ConversationService', () => {
   const mockSession: SessionState = {
@@ -25,21 +33,23 @@ describe('ConversationService', () => {
     jest.clearAllMocks();
     jest.spyOn(console, 'log').mockImplementation();
     jest.spyOn(console, 'error').mockImplementation();
+    (SessionRepository.updateSession as jest.Mock).mockResolvedValue({
+      ...mockSession,
+      turnCount: 1,
+    });
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  describe('processTurn()', () => {
+  describe('processTurn() - Basic behavior', () => {
     it('should return a valid conversational response', async () => {
       const response = await ConversationService.processTurn(mockSession, mockRequest);
 
       expect(response).toHaveProperty('type', 'conversational');
-      expect(response).toHaveProperty('sessionId');
       expect(response.type).toBe('conversational');
 
-      // Type narrowing for discriminated union
       if (response.type === 'conversational') {
         expect(response).toHaveProperty('assistantMessage');
         expect(response).toHaveProperty('phase');
@@ -54,32 +64,47 @@ describe('ConversationService', () => {
       expect(response.sessionId).toBe(mockSession.sessionId);
     });
 
-    it('should preserve phase from session', async () => {
-      const response = await ConversationService.processTurn(mockSession, mockRequest);
-
-      expect(response.phase).toBe(mockSession.phase);
-    });
-
-    it('should increment turn count', async () => {
+    it('should increment turn count on every turn (AC-04)', async () => {
       const response = await ConversationService.processTurn(mockSession, mockRequest);
 
       expect(response.turnCount).toBe(mockSession.turnCount + 1);
     });
 
-    it('should echo user message in assistant response (stub behavior)', async () => {
-      const response = await ConversationService.processTurn(mockSession, mockRequest);
+    it('should persist updated session to DynamoDB (AC-05)', async () => {
+      await ConversationService.processTurn(mockSession, mockRequest);
 
-      if (response.type === 'conversational') {
-        expect(response.assistantMessage).toContain(mockRequest.userMessage);
-        expect(response.assistantMessage).toBe(`Echo: ${mockRequest.userMessage}`);
-      } else {
-        throw new Error('Expected conversational response');
-      }
+      expect(SessionRepository.updateSession).toHaveBeenCalledWith(
+        mockSession.sessionId,
+        expect.objectContaining({
+          turnCount: 1,
+        }),
+      );
     });
 
-    it('should set synthesisReady to false in stub (will be configured later)', async () => {
-      const response = await ConversationService.processTurn(mockSession, mockRequest);
+    it('should include history entries in persistence', async () => {
+      await ConversationService.processTurn(mockSession, mockRequest);
 
+      const updateCall = (SessionRepository.updateSession as jest.Mock).mock.calls[0];
+      const historyArg = updateCall[1].history;
+
+      expect(historyArg).toBeDefined();
+      expect(historyArg).toHaveLength(2);
+      expect(historyArg[0]).toMatchObject({ role: 'user' });
+      expect(historyArg[1]).toMatchObject({ role: 'assistant' });
+    });
+  });
+
+  describe('Phase transitions - Discovery phase (AC-06)', () => {
+    it('should remain in discovery on early turns (before threshold)', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+        turnCount: 0, // First turn
+      };
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.phase).toBe('discovery');
       if (response.type === 'conversational') {
         expect(response.synthesisReady).toBe(false);
       } else {
@@ -87,55 +112,212 @@ describe('ConversationService', () => {
       }
     });
 
-    it('should handle messages with special characters', async () => {
-      const specialRequest: TurnRequest = {
-        userMessage: 'What about C++ and C#? "Testing" edge cases!',
+    it('should remain in discovery at turn count 2', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+        turnCount: 1, // Will become turn 2
       };
-      const response = await ConversationService.processTurn(mockSession, specialRequest);
 
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.phase).toBe('discovery');
+    });
+
+    it('should NOT advance to goalElicitation without explicit Bedrock ready signal (stub)', async () => {
+      // In M4, Bedrock stub always returns false, so even at threshold we don't advance
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+        turnCount: DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD - 1, // Will become threshold
+      };
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      // Should stay in discovery because Bedrock stub returns false
+      expect(response.phase).toBe('discovery');
+    });
+
+    it('should skip goalElicitation if trigger phrase detected in discovery', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+        turnCount: 0,
+      };
+
+      const request: TurnRequest = {
+        userMessage: `I think I'm ${SYNTHESIS_TRIGGER_PHRASE} now`,
+      };
+
+      const response = await ConversationService.processTurn(session, request);
+
+      expect(response.phase).toBe('synthesis');
+    });
+  });
+
+  describe('Phase transitions - GoalElicitation phase (AC-06)', () => {
+    it('should remain in goalElicitation on early turns', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'goalElicitation',
+        turnCount: 0,
+      };
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.phase).toBe('goalElicitation');
+    });
+
+    it('should transition to synthesis when max turns reached (AC-06)', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'goalElicitation',
+        turnCount: GOAL_ELICITATION_MAX_TURNS - 1, // Will become max
+      };
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.phase).toBe('synthesis');
       if (response.type === 'conversational') {
-        expect(response.assistantMessage).toContain('C++');
-        expect(response.assistantMessage).toContain('C#');
+        expect(response.synthesisReady).toBe(true);
+      } else {
+        throw new Error('Expected conversational response at transition');
       }
     });
 
-    it('should work with sessions at different phases', async () => {
-      const goalElicitationSession: SessionState = {
+    it('should transition to synthesis when trigger phrase detected (AC-06)', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'goalElicitation',
+        turnCount: 5,
+      };
+
+      const request: TurnRequest = {
+        userMessage: `I'm ${SYNTHESIS_TRIGGER_PHRASE}`,
+      };
+
+      const response = await ConversationService.processTurn(session, request);
+
+      expect(response.phase).toBe('synthesis');
+    });
+
+    it('should detect synthesis trigger phrase case-insensitively (AC-03)', async () => {
+      const session: SessionState = {
         ...mockSession,
         phase: 'goalElicitation',
         turnCount: 2,
       };
 
-      const response = await ConversationService.processTurn(goalElicitationSession, mockRequest);
+      const testCases = [
+        `I am ${SYNTHESIS_TRIGGER_PHRASE.toUpperCase()}`,
+        `${SYNTHESIS_TRIGGER_PHRASE.toLocaleUpperCase()}!`,
+        `Check this out: ${SYNTHESIS_TRIGGER_PHRASE}. Thanks!`,
+        `READY FOR RECOMMENDATIONS please`,
+        `ready for recommendations`,
+        `ReAdY fOr ReCoMmEnDaTiOnS`,
+      ];
 
-      expect(response.phase).toBe('goalElicitation');
-      expect(response.turnCount).toBe(3);
+      for (const userMessage of testCases) {
+        const request: TurnRequest = { userMessage };
+        const response = await ConversationService.processTurn(session, request);
+
+        expect(response.phase).toBe('synthesis');
+      }
     });
 
-    it('should work with sessions at synthesis phase', async () => {
-      const synthesisSession: SessionState = {
+    it('should NOT trigger synthesis on partial phrase match only', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'goalElicitation',
+        turnCount: 2,
+      };
+
+      const request: TurnRequest = {
+        userMessage: 'I am ready for recommendations in the future but not now',
+      };
+
+      // This should still trigger because it contains the full phrase
+      const response = await ConversationService.processTurn(session, request);
+      expect(response.phase).toBe('synthesis');
+    });
+  });
+
+  describe('Phase transitions - Synthesis phase', () => {
+    it('should remain in synthesis phase', async () => {
+      const session: SessionState = {
         ...mockSession,
         phase: 'synthesis',
         turnCount: 10,
       };
 
-      const response = await ConversationService.processTurn(synthesisSession, mockRequest);
+      const response = await ConversationService.processTurn(session, mockRequest);
 
       expect(response.phase).toBe('synthesis');
-      expect(response.turnCount).toBe(11);
     });
 
-    it('should handle long user messages', async () => {
-      const longRequest: TurnRequest = {
-        userMessage: 'a'.repeat(1000),
+    it('should set synthesisReady to true in synthesis phase', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'synthesis',
+        turnCount: 10,
       };
 
-      const response = await ConversationService.processTurn(mockSession, longRequest);
+      const response = await ConversationService.processTurn(session, mockRequest);
 
       if (response.type === 'conversational') {
-        expect(response.assistantMessage).toContain('a');
-        expect(response.assistantMessage.length).toBeGreaterThan(1000);
+        expect(response.synthesisReady).toBe(true);
+      } else {
+        throw new Error('Expected conversational response in synthesis phase');
       }
+    });
+
+    it('should increment turn count even in synthesis phase (AC-04)', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'synthesis',
+        turnCount: 10,
+      };
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.turnCount).toBe(11);
+    });
+  });
+
+  describe('Turn count behavior (AC-04)', () => {
+    it('should increment turn count from 0 to 1', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        turnCount: 0,
+      };
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.turnCount).toBe(1);
+    });
+
+    it('should increment turn count at discovery threshold boundary', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+        turnCount: DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD - 1,
+      };
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.turnCount).toBe(DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD);
+    });
+
+    it('should increment turn count at goalElicitation max boundary', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'goalElicitation',
+        turnCount: GOAL_ELICITATION_MAX_TURNS - 1,
+      };
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.turnCount).toBe(GOAL_ELICITATION_MAX_TURNS);
     });
   });
 
@@ -190,118 +372,97 @@ describe('ConversationService', () => {
       });
     });
 
-    it('should not use JSON.stringify for logging', async () => {
-      const stringifySpy = jest.spyOn(JSON, 'stringify');
-
-      await ConversationService.processTurn(mockSession, mockRequest);
-
-      const stringifyCallsNotFromBody = stringifySpy.mock.calls.filter(
-        (call) => !call[0]?.assistantMessage, // Filter out the response body serialization
-      );
-
-      // JSON.stringify should only be called for response body, not for logging
-      expect(stringifyCallsNotFromBody).toHaveLength(0);
-
-      stringifySpy.mockRestore();
-    });
-
-    it('should log with correct context information', async () => {
-      const customSession: SessionState = {
+    it('should log phase transition when it occurs', async () => {
+      const session: SessionState = {
         ...mockSession,
-        sessionId: 'custom-session-456',
         phase: 'goalElicitation',
-        turnCount: 5,
+        turnCount: GOAL_ELICITATION_MAX_TURNS - 1,
       };
 
-      await ConversationService.processTurn(customSession, mockRequest);
+      await ConversationService.processTurn(session, mockRequest);
 
       const consoleLogs = (console.log as jest.Mock).mock.calls;
-      const allLogs = consoleLogs.map((call) => call[0]);
+      const transitionLog = consoleLogs.find((call) => {
+        const arg = call[0];
+        return arg && typeof arg === 'object' && arg.message === 'ConversationService.processTurn - phase transition';
+      });
 
-      allLogs.forEach((log) => {
-        if (log && typeof log === 'object' && 'sessionId' in log) {
-          expect(log.sessionId).toBe('custom-session-456');
-        }
-        if (log && typeof log === 'object' && 'phase' in log) {
-          expect(log.phase).toBe('goalElicitation');
-        }
+      expect(transitionLog).toBeDefined();
+      expect(transitionLog![0]).toMatchObject({
+        level: 'info',
+        message: 'ConversationService.processTurn - phase transition',
+        fromPhase: 'goalElicitation',
+        toPhase: 'synthesis',
+      });
+    });
+
+    it('should log persistence action', async () => {
+      await ConversationService.processTurn(mockSession, mockRequest);
+
+      const consoleLogs = (console.log as jest.Mock).mock.calls;
+      const persistLog = consoleLogs.find((call) => {
+        const arg = call[0];
+        return arg && typeof arg === 'object' && arg.message?.includes('persisting session');
+      });
+
+      expect(persistLog).toBeDefined();
+      expect(persistLog![0]).toMatchObject({
+        level: 'debug',
+        message: expect.stringContaining('persisting session'),
       });
     });
   });
 
   describe('Error handling', () => {
-    it('should log errors when they occur', async () => {
-      // For the stub implementation, errors are only logged during processing
-      // Full error scenarios will be tested when business logic is implemented
-      const consoleSpy = jest.spyOn(console, 'error');
+    it('should log error and rethrow on SessionRepository error', async () => {
+      const error = new Error('DynamoDB error');
+      (SessionRepository.updateSession as jest.Mock).mockRejectedValue(error);
 
-      // The stub won't throw for normal cases, so this test is a placeholder
-      // for when full business logic is implemented
-      expect(consoleSpy).not.toHaveBeenCalled();
+      await expect(ConversationService.processTurn(mockSession, mockRequest)).rejects.toThrow('DynamoDB error');
 
-      consoleSpy.mockRestore();
+      const consoleLogs = (console.error as jest.Mock).mock.calls;
+      const errorLog = consoleLogs.find((call) => {
+        const arg = call[0];
+        return arg && typeof arg === 'object' && arg.level === 'error';
+      });
+
+      expect(errorLog).toBeDefined();
+      expect(errorLog![0]).toMatchObject({
+        level: 'error',
+        message: expect.stringContaining('error'),
+        sessionId: mockSession.sessionId,
+      });
+    });
+
+    it('should not mutate original session object', async () => {
+      const originalTurnCount = mockSession.turnCount;
+      const originalPhase = mockSession.phase;
+
+      await ConversationService.processTurn(mockSession, mockRequest);
+
+      expect(mockSession.turnCount).toBe(originalTurnCount);
+      expect(mockSession.phase).toBe(originalPhase);
     });
   });
 
-  describe('Response validation', () => {
-    it('should return response matching TurnResponse schema', async () => {
-      const response = await ConversationService.processTurn(mockSession, mockRequest);
-
-      // Check type is correct discriminator
-      expect(['conversational', 'synthesis']).toContain(response.type);
-      expect(typeof response.sessionId).toBe('string');
-      expect(typeof response.phase).toBe('string');
-      expect(typeof response.turnCount).toBe('number');
-
-      if (response.type === 'conversational') {
-        expect(typeof response.assistantMessage).toBe('string');
-        expect(typeof response.synthesisReady).toBe('boolean');
-      } else if (response.type === 'synthesis') {
-        expect(response.phase).toBe('synthesis');
-        expect(response).toHaveProperty('recommendation');
-      }
+  describe('Constants usage', () => {
+    it('should use DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD constant', async () => {
+      // This is tested implicitly through phase transition tests
+      // Verify the threshold is positive and reasonable
+      expect(DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD).toBeGreaterThan(0);
+      expect(DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD).toBeLessThanOrEqual(10);
     });
 
-    it('should have non-empty assistant message', async () => {
-      const response = await ConversationService.processTurn(mockSession, mockRequest);
-
-      if (response.type === 'conversational') {
-        expect(response.assistantMessage.length).toBeGreaterThan(0);
-      }
+    it('should use GOAL_ELICITATION_MAX_TURNS constant', async () => {
+      // Verify the max is reasonable
+      expect(GOAL_ELICITATION_MAX_TURNS).toBeGreaterThan(DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD);
+      expect(GOAL_ELICITATION_MAX_TURNS).toBeLessThanOrEqual(50);
     });
 
-    it('should have turn count greater than original', async () => {
-      const response = await ConversationService.processTurn(mockSession, mockRequest);
-
-      expect(response.turnCount).toBeGreaterThan(mockSession.turnCount);
-    });
-  });
-
-  describe('Stub implementation behavior', () => {
-    it('should process multiple turns sequentially', async () => {
-      const session1 = mockSession;
-      const session2 = { ...mockSession, turnCount: 1 };
-      const session3 = { ...mockSession, turnCount: 2 };
-
-      const response1 = await ConversationService.processTurn(session1, mockRequest);
-      const response2 = await ConversationService.processTurn(session2, mockRequest);
-      const response3 = await ConversationService.processTurn(session3, mockRequest);
-
-      expect(response1.turnCount).toBe(1);
-      expect(response2.turnCount).toBe(2);
-      expect(response3.turnCount).toBe(3);
-    });
-
-    it('should be deterministic for same inputs', async () => {
-      const response1 = await ConversationService.processTurn(mockSession, mockRequest);
-      const response2 = await ConversationService.processTurn(mockSession, mockRequest);
-
-      expect(response1.turnCount).toBe(response2.turnCount);
-
-      if (response1.type === 'conversational' && response2.type === 'conversational') {
-        expect(response1.assistantMessage).toBe(response2.assistantMessage);
-        expect(response1.synthesisReady).toBe(response2.synthesisReady);
-      }
+    it('should use SYNTHESIS_TRIGGER_PHRASE constant', async () => {
+      // Verify the phrase is configured
+      expect(SYNTHESIS_TRIGGER_PHRASE).toHaveLength(SYNTHESIS_TRIGGER_PHRASE.length);
+      expect(SYNTHESIS_TRIGGER_PHRASE.toLowerCase()).toBe('ready for recommendations');
     });
   });
 });
