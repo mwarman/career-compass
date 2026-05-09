@@ -8,6 +8,7 @@ const config: Config = {
   testMatch: ['**/__tests__/**/*.ts', '**/*.test.ts', '**/*.spec.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  modulePathIgnorePatterns: ['/node_modules/', '/dist/'],
   collectCoverageFrom: ['**/*.ts', '!**/*.d.ts', '!**/node_modules/**', '!**/dist/**'],
   coveragePathIgnorePatterns: ['/node_modules/', '/dist/', 'jest.*.ts'],
 };
