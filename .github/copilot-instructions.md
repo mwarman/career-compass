@@ -30,6 +30,8 @@ Cross-package imports use the `@career-compass/*` scope and workspace resolution
 
 - **Arrow Functions**: Use arrow functions for all function definitions to maintain consistent `this` context. Avoid function declarations and expressions.
 
+- **Barrel Files**: Avoid barrel files. Import directly from source files to maintain clear dependency graphs and avoid circular imports.
+
 - **Module Targets**: Target ES2022 language features and ESNext modules. Use proper module resolution (`bundler` strategy).
 
 - **Modules vs Classes**: Favor modules and functions over classes. Use plain objects and functions for state management and logic. Classes may be used for complex data structures if justified.

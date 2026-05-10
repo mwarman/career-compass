@@ -3,6 +3,7 @@ import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand } from '@
 import { SessionState, SessionStateSchema } from '@career-compass/shared';
 
 import { config } from '../utils/config';
+import { Logger } from '../utils/logger';
 
 import { RepositoryError } from './repository-error';
 
@@ -35,6 +36,11 @@ const tableName = config.dynamodbTableName;
  */
 const getSession = async (sessionId: string): Promise<SessionState | null> => {
   try {
+    Logger.debug('SessionRepository.getSession - sending GetCommand', {
+      sessionId,
+      tableName,
+    });
+
     const command = new GetCommand({
       TableName: tableName,
       Key: { sessionId },
@@ -43,6 +49,9 @@ const getSession = async (sessionId: string): Promise<SessionState | null> => {
     const result = await docClient.send(command);
 
     if (!result.Item) {
+      Logger.debug('SessionRepository.getSession - session not found', {
+        sessionId,
+      });
       return null;
     }
 
@@ -51,6 +60,12 @@ const getSession = async (sessionId: string): Promise<SessionState | null> => {
     if (!validationResult.success) {
       throw new Error(`Invalid session state from DynamoDB: ${validationResult.error.message}`);
     }
+
+    Logger.debug('SessionRepository.getSession - session retrieved', {
+      sessionId,
+      phase: validationResult.data.phase,
+      turnCount: validationResult.data.turnCount,
+    });
 
     return validationResult.data;
   } catch (error) {
@@ -83,12 +98,24 @@ const createSession = async (seed: Partial<SessionState>): Promise<SessionState>
       throw new Error(`Invalid session state: ${validationResult.error.message}`);
     }
 
+    Logger.debug('SessionRepository.createSession - sending PutCommand', {
+      sessionId: session.sessionId,
+      phase: session.phase,
+      tableName,
+    });
+
     const command = new PutCommand({
       TableName: tableName,
       Item: validationResult.data,
     });
 
     await docClient.send(command);
+
+    Logger.debug('SessionRepository.createSession - session created', {
+      sessionId: session.sessionId,
+      phase: session.phase,
+    });
+
     return validationResult.data;
   } catch (error) {
     throw new RepositoryError('Failed to create session', 'createSession', error);
@@ -136,8 +163,19 @@ const updateSession = async (sessionId: string, updates: Partial<SessionState>):
         throw new Error(`Session ${sessionId} not found`);
       }
       session.ttl = ttl;
+
+      Logger.debug('SessionRepository.updateSession - only TTL refreshed', {
+        sessionId,
+      });
+
       return session;
     }
+
+    Logger.debug('SessionRepository.updateSession - sending UpdateCommand', {
+      sessionId,
+      updates: Object.keys(updates).filter((k) => k !== 'history'),
+      tableName,
+    });
 
     const command = new UpdateCommand({
       TableName: tableName,
@@ -158,6 +196,12 @@ const updateSession = async (sessionId: string, updates: Partial<SessionState>):
     if (!validationResult.success) {
       throw new Error(`Invalid updated session state: ${validationResult.error.message}`);
     }
+
+    Logger.debug('SessionRepository.updateSession - session updated', {
+      sessionId,
+      phase: validationResult.data.phase,
+      turnCount: validationResult.data.turnCount,
+    });
 
     return validationResult.data;
   } catch (error) {

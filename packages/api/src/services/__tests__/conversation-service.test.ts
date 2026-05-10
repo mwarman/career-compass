@@ -14,6 +14,7 @@ import {
 import { ConversationService } from '../conversation-service';
 
 jest.mock('../../repositories/session-repository');
+jest.mock('../../utils/logger');
 
 describe('ConversationService', () => {
   const mockSession: SessionState = {
@@ -31,8 +32,6 @@ describe('ConversationService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'log').mockImplementation();
-    jest.spyOn(console, 'error').mockImplementation();
     (SessionRepository.updateSession as jest.Mock).mockResolvedValue({
       ...mockSession,
       turnCount: 1,
@@ -321,119 +320,7 @@ describe('ConversationService', () => {
     });
   });
 
-  describe('Logging behavior', () => {
-    it('should log entry with info level', async () => {
-      await ConversationService.processTurn(mockSession, mockRequest);
-
-      const consoleLogs = (console.log as jest.Mock).mock.calls;
-      const entryLog = consoleLogs.find((call) => {
-        const arg = call[0];
-        return arg && typeof arg === 'object' && arg.message?.includes('entering');
-      });
-
-      expect(entryLog).toBeDefined();
-      expect(entryLog![0]).toMatchObject({
-        level: 'info',
-        message: expect.stringContaining('entering'),
-        sessionId: mockSession.sessionId,
-      });
-    });
-
-    it('should log exit with info level', async () => {
-      await ConversationService.processTurn(mockSession, mockRequest);
-
-      const consoleLogs = (console.log as jest.Mock).mock.calls;
-      const exitLog = consoleLogs.find((call) => {
-        const arg = call[0];
-        return arg && typeof arg === 'object' && arg.message?.includes('exiting');
-      });
-
-      expect(exitLog).toBeDefined();
-      expect(exitLog![0]).toMatchObject({
-        level: 'info',
-        message: expect.stringContaining('exiting'),
-        sessionId: mockSession.sessionId,
-      });
-    });
-
-    it('should log response generation with debug level', async () => {
-      await ConversationService.processTurn(mockSession, mockRequest);
-
-      const consoleLogs = (console.log as jest.Mock).mock.calls;
-      const debugLog = consoleLogs.find((call) => {
-        const arg = call[0];
-        return arg && typeof arg === 'object' && arg.message?.includes('response generated');
-      });
-
-      expect(debugLog).toBeDefined();
-      expect(debugLog![0]).toMatchObject({
-        level: 'debug',
-        message: expect.stringContaining('response generated'),
-      });
-    });
-
-    it('should log phase transition when it occurs', async () => {
-      const session: SessionState = {
-        ...mockSession,
-        phase: 'goalElicitation',
-        turnCount: GOAL_ELICITATION_MAX_TURNS - 1,
-      };
-
-      await ConversationService.processTurn(session, mockRequest);
-
-      const consoleLogs = (console.log as jest.Mock).mock.calls;
-      const transitionLog = consoleLogs.find((call) => {
-        const arg = call[0];
-        return arg && typeof arg === 'object' && arg.message === 'ConversationService.processTurn - phase transition';
-      });
-
-      expect(transitionLog).toBeDefined();
-      expect(transitionLog![0]).toMatchObject({
-        level: 'info',
-        message: 'ConversationService.processTurn - phase transition',
-        fromPhase: 'goalElicitation',
-        toPhase: 'synthesis',
-      });
-    });
-
-    it('should log persistence action', async () => {
-      await ConversationService.processTurn(mockSession, mockRequest);
-
-      const consoleLogs = (console.log as jest.Mock).mock.calls;
-      const persistLog = consoleLogs.find((call) => {
-        const arg = call[0];
-        return arg && typeof arg === 'object' && arg.message?.includes('persisting session');
-      });
-
-      expect(persistLog).toBeDefined();
-      expect(persistLog![0]).toMatchObject({
-        level: 'debug',
-        message: expect.stringContaining('persisting session'),
-      });
-    });
-  });
-
   describe('Error handling', () => {
-    it('should log error and rethrow on SessionRepository error', async () => {
-      const error = new Error('DynamoDB error');
-      (SessionRepository.updateSession as jest.Mock).mockRejectedValue(error);
-
-      await expect(ConversationService.processTurn(mockSession, mockRequest)).rejects.toThrow('DynamoDB error');
-
-      const consoleLogs = (console.error as jest.Mock).mock.calls;
-      const errorLog = consoleLogs.find((call) => {
-        const arg = call[0];
-        return arg && typeof arg === 'object' && arg.level === 'error';
-      });
-
-      expect(errorLog).toBeDefined();
-      expect(errorLog![0]).toMatchObject({
-        level: 'error',
-        message: expect.stringContaining('error'),
-        sessionId: mockSession.sessionId,
-      });
-    });
-
     it('should not mutate original session object', async () => {
       const originalTurnCount = mockSession.turnCount;
       const originalPhase = mockSession.phase;

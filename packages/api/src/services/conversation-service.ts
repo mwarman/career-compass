@@ -18,6 +18,7 @@ import {
   GOAL_ELICITATION_MAX_TURNS,
   SYNTHESIS_TRIGGER_PHRASE,
 } from '../utils/constants';
+import { Logger } from '../utils/logger';
 
 /**
  * Detect if a user message contains the synthesis trigger phrase (case-insensitive).
@@ -87,9 +88,7 @@ const determineNextPhase = (
  * @returns The conversation turn response with updated session state
  */
 const processTurn = async (session: SessionState, request: TurnRequest): Promise<TurnResponse> => {
-  console.log({
-    level: 'info',
-    message: 'ConversationService.processTurn - entering',
+  Logger.info('ConversationService.processTurn - entering', {
     sessionId: session.sessionId,
     turnCount: session.turnCount,
     phase: session.phase,
@@ -100,9 +99,7 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
     const nextTurnCount = session.turnCount + 1;
 
     // Log phase transition evaluation
-    console.log({
-      level: 'debug',
-      message: 'ConversationService.processTurn - evaluating phase transition',
+    Logger.debug('ConversationService.processTurn - evaluating phase transition', {
       sessionId: session.sessionId,
       currentPhase: session.phase,
       nextTurnCount,
@@ -115,9 +112,7 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
 
     // Log phase transition if changed
     if (nextPhase !== session.phase) {
-      console.log({
-        level: 'info',
-        message: 'ConversationService.processTurn - phase transition',
+      Logger.info('ConversationService.processTurn - phase transition', {
         sessionId: session.sessionId,
         fromPhase: session.phase,
         toPhase: nextPhase,
@@ -138,18 +133,14 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
       synthesisReady: nextPhase === 'synthesis',
     };
 
-    console.log({
-      level: 'debug',
-      message: 'ConversationService.processTurn - response generated',
+    Logger.debug('ConversationService.processTurn - response generated', {
       sessionId: session.sessionId,
       phase: response.phase,
       synthesisReady: response.synthesisReady,
     });
 
     // Persist updated session state to DynamoDB
-    console.log({
-      level: 'debug',
-      message: 'ConversationService.processTurn - persisting session',
+    Logger.debug('ConversationService.processTurn - persisting session', {
       sessionId: session.sessionId,
       phase: nextPhase,
       turnCount: nextTurnCount,
@@ -170,9 +161,7 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
       ],
     });
 
-    console.log({
-      level: 'info',
-      message: 'ConversationService.processTurn - exiting',
+    Logger.info('ConversationService.processTurn - exiting', {
       sessionId: session.sessionId,
       phase: nextPhase,
       turnCount: nextTurnCount,
@@ -180,11 +169,9 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
 
     return response;
   } catch (error) {
-    console.error({
-      level: 'error',
-      message: 'ConversationService.processTurn - error',
+    Logger.error('ConversationService.processTurn - error', {
       sessionId: session.sessionId,
-      error: error instanceof Error ? error.message : String(error),
+      error,
     });
     throw error;
   }

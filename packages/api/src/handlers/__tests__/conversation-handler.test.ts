@@ -9,6 +9,7 @@ import { APIGatewayProxyEventV2 } from 'aws-lambda';
 // Mock external dependencies before importing the handler
 jest.mock('../../repositories/session-repository');
 jest.mock('../../services/conversation-service');
+jest.mock('../../utils/logger');
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { SessionRepository } = require('../../repositories/session-repository');
@@ -244,7 +245,7 @@ describe('conversationHandler', () => {
       expect(response.headers['Content-Type']).toBe('application/json');
 
       const body = JSON.parse(response.body);
-      expect(body.error).toBe('Session not found');
+      expect(body.error).toContain('Session not found');
     });
   });
 
@@ -397,6 +398,89 @@ describe('conversationHandler', () => {
       const body = JSON.parse(response.body);
       expect(body.sessionId).toBe('test-session-123');
       expect(body.turnCount).toBe(2);
+    });
+  });
+
+  describe('AC-04: Logging - Entry, exit, and duration tracking', () => {
+    it('should log on handler entry with requestId, method, and path', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const logger = require('../../utils/logger');
+
+      SessionRepository.createSession.mockResolvedValue(mockSessionState);
+      ConversationService.processTurn.mockResolvedValue(mockTurnResponse);
+
+      const event = createMockEvent({
+        body: JSON.stringify({ userMessage: 'Hello' }),
+      });
+
+      await handler(event);
+
+      expect(logger.Logger.info).toHaveBeenCalledWith(
+        'conversationHandler - entering',
+        expect.objectContaining({
+          requestId: 'test-request-123',
+          method: 'POST',
+          path: '/conversation/turn',
+        }),
+      );
+    });
+
+    it('should log on handler exit with statusCode and durationMs', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const logger = require('../../utils/logger');
+
+      SessionRepository.createSession.mockResolvedValue(mockSessionState);
+      ConversationService.processTurn.mockResolvedValue(mockTurnResponse);
+
+      const event = createMockEvent({
+        body: JSON.stringify({ userMessage: 'Hello' }),
+      });
+
+      await handler(event);
+
+      expect(logger.Logger.info).toHaveBeenCalledWith(
+        'conversationHandler - exiting',
+        expect.objectContaining({
+          statusCode: 201,
+          durationMs: expect.any(Number),
+          sessionId: 'test-session-123',
+        }),
+      );
+    });
+
+    it('should log errors with error context', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const logger = require('../../utils/logger');
+
+      SessionRepository.createSession.mockRejectedValue(new Error('DynamoDB error'));
+
+      const event = createMockEvent({
+        body: JSON.stringify({ userMessage: 'Hello' }),
+      });
+
+      await handler(event);
+
+      expect(logger.Logger.error).toHaveBeenCalledWith(
+        'conversationHandler - failed to create session',
+        expect.objectContaining({
+          requestId: 'test-request-123',
+          error: expect.any(Error),
+        }),
+      );
+    });
+
+    it('should not include sensitive details in error logs', async () => {
+      SessionRepository.createSession.mockRejectedValue(new Error('Secret password exposed'));
+
+      const event = createMockEvent({
+        body: JSON.stringify({ userMessage: 'Hello' }),
+      });
+
+      const response = await handler(event);
+
+      // Response should not contain sensitive details
+      expect(response.body).not.toContain('password');
+      expect(response.body).not.toContain('Secret');
     });
   });
 });

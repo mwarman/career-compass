@@ -7,19 +7,22 @@
 import { TurnRequestSchema, TurnRequest, SessionState } from '@career-compass/shared';
 import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
 
+import { SessionNotFoundError } from '../errors/session-not-found-error';
+import { ValidationError } from '../errors/validation-error';
+import { RepositoryError } from '../repositories/repository-error';
 import { SessionRepository } from '../repositories/session-repository';
 import { ConversationService } from '../services/conversation-service';
-import { ok, created, badRequest, notFound, internalServerError } from '../utils/apigateway-response';
+import { ok, created, errorResponse, badRequest } from '../utils/apigateway-response';
+import { Logger } from '../utils/logger';
 
 /**
  * Lambda handler for POST /conversation/turn
  */
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
+  const startTime = Date.now();
   const requestId = event.requestContext?.requestId || 'unknown';
 
-  console.log({
-    level: 'info',
-    message: 'conversationHandler - entering',
+  Logger.info('conversationHandler - entering', {
     requestId,
     method: event.requestContext?.http?.method,
     path: event.requestContext?.http?.path,
@@ -31,19 +34,15 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
       body = event.body ? JSON.parse(event.body) : {};
     } catch (parseError) {
-      console.log({
-        level: 'warn',
-        message: 'conversationHandler - failed to parse body',
+      Logger.warn('conversationHandler - failed to parse body', {
         requestId,
-        error: parseError instanceof Error ? parseError.message : String(parseError),
+        error: parseError,
       });
       return badRequest('Invalid JSON in request body');
     }
 
     // Validate request body with TurnRequestSchema
-    console.log({
-      level: 'debug',
-      message: 'conversationHandler - validating request',
+    Logger.debug('conversationHandler - validating request', {
       requestId,
       hasSessionId: body && typeof body === 'object' && 'sessionId' in body,
     });
@@ -55,14 +54,13 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         message: issue.message,
       }));
 
-      console.log({
-        level: 'warn',
-        message: 'conversationHandler - validation failed',
+      Logger.warn('conversationHandler - validation failed', {
         requestId,
-        errors: validationErrors,
+        errorCount: validationErrors.length,
       });
 
-      return badRequest('Request validation failed', validationErrors);
+      const validationError = new ValidationError('Request validation failed', validationErrors);
+      return errorResponse(validationError);
     }
 
     const request: TurnRequest = validationResult.data;
@@ -71,9 +69,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     // Route based on sessionId presence
     if (!request.sessionId) {
       // First turn: create new session
-      console.log({
-        level: 'info',
-        message: 'conversationHandler - first turn detected, creating session',
+      Logger.info('conversationHandler - first turn detected, creating session', {
         requestId,
       });
 
@@ -84,26 +80,24 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
           history: [],
         });
 
-        console.log({
-          level: 'debug',
-          message: 'conversationHandler - session created',
+        Logger.debug('conversationHandler - session created', {
           requestId,
           sessionId: session.sessionId,
         });
       } catch (createError) {
-        console.error({
-          level: 'error',
-          message: 'conversationHandler - failed to create session',
+        Logger.error('conversationHandler - failed to create session', {
           requestId,
-          error: createError instanceof Error ? createError.message : String(createError),
+          error: createError,
         });
-        return internalServerError();
+
+        if (createError instanceof RepositoryError) {
+          return errorResponse(createError);
+        }
+        throw createError;
       }
     } else {
       // Subsequent turn: load session from DynamoDB
-      console.log({
-        level: 'info',
-        message: 'conversationHandler - subsequent turn detected, loading session',
+      Logger.info('conversationHandler - subsequent turn detected, loading session', {
         requestId,
         sessionId: request.sessionId,
       });
@@ -112,40 +106,38 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const loadedSession = await SessionRepository.getSession(request.sessionId);
 
         if (!loadedSession) {
-          console.log({
-            level: 'warn',
-            message: 'conversationHandler - session not found',
+          Logger.warn('conversationHandler - session not found', {
             requestId,
             sessionId: request.sessionId,
           });
-          return notFound('Session not found');
+
+          const sessionNotFoundError = new SessionNotFoundError(request.sessionId);
+          return errorResponse(sessionNotFoundError);
         }
 
         session = loadedSession;
 
-        console.log({
-          level: 'debug',
-          message: 'conversationHandler - session loaded',
+        Logger.debug('conversationHandler - session loaded', {
           requestId,
           sessionId: session.sessionId,
           phase: session.phase,
         });
       } catch (loadError) {
-        console.error({
-          level: 'error',
-          message: 'conversationHandler - failed to load session',
+        Logger.error('conversationHandler - failed to load session', {
           requestId,
           sessionId: request.sessionId,
-          error: loadError instanceof Error ? loadError.message : String(loadError),
+          error: loadError,
         });
-        return internalServerError();
+
+        if (loadError instanceof RepositoryError) {
+          return errorResponse(loadError);
+        }
+        throw loadError;
       }
     }
 
     // Delegate to ConversationService
-    console.log({
-      level: 'info',
-      message: 'conversationHandler - delegating to ConversationService',
+    Logger.debug('conversationHandler - delegating to ConversationService', {
       requestId,
       sessionId: session.sessionId,
     });
@@ -154,44 +146,52 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
       response = await ConversationService.processTurn(session, request);
 
-      console.log({
-        level: 'debug',
-        message: 'conversationHandler - ConversationService returned',
+      Logger.debug('conversationHandler - ConversationService returned', {
         requestId,
         sessionId: session.sessionId,
         responseType: response.type,
       });
     } catch (serviceError) {
-      console.error({
-        level: 'error',
-        message: 'conversationHandler - ConversationService error',
+      Logger.error('conversationHandler - ConversationService error', {
         requestId,
         sessionId: session.sessionId,
-        error: serviceError instanceof Error ? serviceError.message : String(serviceError),
+        error: serviceError,
       });
-      return internalServerError();
+
+      if (
+        serviceError instanceof ValidationError ||
+        serviceError instanceof SessionNotFoundError ||
+        serviceError instanceof RepositoryError
+      ) {
+        return errorResponse(serviceError);
+      }
+      throw serviceError;
     }
 
     // Determine status code: 201 for first turn, 200 for subsequent
     const statusCode = !request.sessionId ? 201 : 200;
+    const durationMs = Date.now() - startTime;
 
-    console.log({
-      level: 'info',
-      message: 'conversationHandler - exiting',
+    Logger.info('conversationHandler - exiting', {
       requestId,
       sessionId: session.sessionId,
       statusCode,
+      durationMs,
+      turnCount: session.turnCount + 1,
     });
 
     return statusCode === 201 ? created(response) : ok(response);
   } catch (error) {
-    console.error({
-      level: 'error',
-      message: 'conversationHandler - unhandled error',
+    const durationMs = Date.now() - startTime;
+
+    Logger.error('conversationHandler - unhandled error', {
       requestId,
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
+      durationMs,
+      error,
     });
-    return internalServerError();
+
+    // Return generic error response without leaking internal details
+    const genericError = new RepositoryError('Internal server error', 'unhandled');
+    return errorResponse(genericError);
   }
 };
