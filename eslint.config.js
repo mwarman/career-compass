@@ -9,6 +9,7 @@ export default [
       '**/dist/**',
       '**/build/**',
       '**/coverage/**',
+      '**/cdk.out/**',
       'eslint.config.js',
       '**/jest.config.ts',
       '**/jest.setup.ts',
