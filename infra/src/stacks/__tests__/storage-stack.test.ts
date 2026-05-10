@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
 import * as cdk from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { StorageStack } from '../storage-stack';
 
