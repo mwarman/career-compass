@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { Logger, LogContext } from '../logger';
 
 describe('logger', () => {
-  let consoleSpy: jest.SpyInstance;
+  let consoleSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+    consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
