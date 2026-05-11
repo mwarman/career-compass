@@ -23,39 +23,3 @@ export const GOAL_ELICITATION_MAX_TURNS = 10;
  * to synthesis phase and generates recommendations.
  */
 export const SYNTHESIS_TRIGGER_PHRASE = 'ready for recommendations';
-
-/**
- * Bedrock model configuration constants.
- * These define the AI model being used for conversation and recommendation generation.
- */
-export const BEDROCK_MODEL_CONFIG = {
-  /**
-   * Default model ID if not specified in environment variables.
-   * Typically 'anthropic.claude-haiku-4-5-20251001-v1:0' or later versions.
-   */
-  defaultModelId: 'anthropic.claude-haiku-4-5-20251001-v1:0',
-
-  /**
-   * Default region for Bedrock API calls.
-   * Should match where the Bedrock service is available.
-   */
-  defaultRegion: 'us-east-1',
-
-  /**
-   * Maximum number of messages to include in Bedrock Converse API calls.
-   * Helps control token usage and API costs.
-   */
-  maxMessageHistory: 50,
-
-  /**
-   * Temperature for Bedrock API calls (0.0 to 1.0).
-   * Lower values make output more deterministic; higher values increase creativity.
-   */
-  temperature: 0.7,
-
-  /**
-   * Maximum tokens to generate per response.
-   * Prevents excessively long outputs and controls costs.
-   */
-  maxTokens: 1024,
-};

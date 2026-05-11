@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as cdk from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
@@ -83,6 +84,8 @@ export class ApiStack extends cdk.Stack {
         SESSION_TABLE_NAME: props.sessionTable.tableName,
         BEDROCK_REGION: 'us-east-1', // Bedrock availability: configure in cdk.json context if needed
         BEDROCK_MODEL_ID: 'anthropic.claude-haiku-4-5-20251001-v1:0',
+        BEDROCK_TEMPERATURE: '0.7',
+        BEDROCK_MAX_TOKENS: '1024',
         CONVERSATION_MAX_TURNS: '10', // Phase state machine max turns
       },
 
@@ -93,7 +96,19 @@ export class ApiStack extends cdk.Stack {
 
     props.sessionTable.grantReadWriteData(this.conversationFunction); // Grant Lambda permissions to read/write session data
 
-    // IAM Policy for Bedrock TBD in future iteration
+    // IAM Policy for Bedrock InvokeModel on the configured Claude Haiku model
+    this.conversationFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['bedrock:InvokeModel'],
+        resources: [
+          // Allow invoking the specific Claude Haiku model (ARN format for Bedrock models)
+          `arn:aws:bedrock:us-east-1::model/anthropic.claude-haiku-4-5-20251001-v1:0`,
+          // Also allow general pattern for Bedrock models if needed for flexibility
+          `arn:aws:bedrock:us-east-1::model/anthropic.claude*`,
+        ],
+      }),
+    );
 
     // Create API Gateway REST API
     this.api = new apigateway.RestApi(this, 'ConversationApi', {
