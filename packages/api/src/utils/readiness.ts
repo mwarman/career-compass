@@ -11,10 +11,6 @@
  * If found, extracts the boolean value and removes the block from the message.
  * If not found, defensively defaults to false.
  *
- * AC-01: parseReadiness(rawResponse: string): { cleanedMessage: string; ready: boolean }
- * AC-02: Returns ready: false if no readiness block is present (defensive default)
- * AC-03: cleanedMessage contains no <readiness> XML tags
- *
  * @param rawResponse - The raw assistant message from Bedrock, potentially containing a readiness block
  * @returns Object with cleanedMessage (block stripped) and ready boolean value
  */
