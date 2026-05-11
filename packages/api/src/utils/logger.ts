@@ -60,7 +60,7 @@ const log = (level: LogLevel, message: string, context?: LogContext): void => {
   }
 
   // CloudWatch Logs expects JSON, not JSON strings
-  console.log(JSON.stringify(logEntry));
+  console.log(logEntry);
 };
 
 /**
