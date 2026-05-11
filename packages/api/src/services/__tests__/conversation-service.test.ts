@@ -12,10 +12,12 @@ import {
   GOAL_ELICITATION_MAX_TURNS,
   SYNTHESIS_TRIGGER_PHRASE,
 } from '../../utils/constants';
+import { BedrockService } from '../bedrock-service';
 import { ConversationService } from '../conversation-service';
 
 vi.mock('../../repositories/session-repository');
 vi.mock('../../utils/logger');
+vi.mock('../bedrock-service');
 
 describe('ConversationService', () => {
   const mockSession: SessionState = {
@@ -37,6 +39,10 @@ describe('ConversationService', () => {
       ...mockSession,
       turnCount: 1,
     });
+    // Mock Bedrock to return response without readiness block for discovery phase
+    (BedrockService.converse as ReturnType<typeof vi.fn>).mockResolvedValue(
+      'This is a helpful assistant response without readiness block.',
+    );
   });
 
   afterEach(() => {
