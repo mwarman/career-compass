@@ -29,7 +29,7 @@ Career Compass is deployed as a serverless application on AWS using infrastructu
 - Code formatting (Prettier)
 - Linting (ESLint)
 - TypeScript strict mode compilation
-- Automated tests (Jest)
+- Automated tests (Vitest)
 
 ## CI/CD Pipeline
 
@@ -47,7 +47,7 @@ The CI workflow runs on every pull request to `main` (open, synchronize, reopen)
 4. **Format Check** — `npm run format:check` (Prettier validation)
 5. **Lint** — `npm run lint` (ESLint with TypeScript strict rules)
 6. **Build** — `npm run build` (TypeScript compilation, all packages)
-7. **Test** — `npm run test` (Jest test suites)
+7. **Test** — `npm run test` (Vitest test suites)
 
 **Caching Strategy:**
 

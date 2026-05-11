@@ -11,8 +11,6 @@ export default [
       '**/coverage/**',
       '**/cdk.out/**',
       'eslint.config.js',
-      '**/jest.config.ts',
-      '**/jest.setup.ts',
       '**/vitest.config.ts',
       '**/vitest.setup.ts',
       '**/components/shadcn/*.tsx',
