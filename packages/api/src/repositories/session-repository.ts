@@ -27,7 +27,7 @@ const initializeClient = (): DynamoDBDocumentClient => {
 
 // Single client instance for connection reuse across Lambda invocations
 const docClient = initializeClient();
-const tableName = config.dynamodbTableName;
+const tableName = config.SESSION_TABLE_NAME;
 
 /**
  * Retrieve a session by ID.
@@ -134,29 +134,34 @@ const updateSession = async (sessionId: string, updates: Partial<SessionState>):
 
     // Build update expression and attribute values
     const updateExpressions: string[] = [];
+    const attributeNames: Record<string, string> = {};
     const attributeValues: Record<string, unknown> = {};
 
     if (updates.phase !== undefined) {
-      updateExpressions.push('phase = :phase');
+      updateExpressions.push('#phase = :phase');
+      attributeNames['#phase'] = 'phase';
       attributeValues[':phase'] = updates.phase;
     }
 
     if (updates.turnCount !== undefined) {
-      updateExpressions.push('turnCount = :turnCount');
+      updateExpressions.push('#turnCount = :turnCount');
+      attributeNames['#turnCount'] = 'turnCount';
       attributeValues[':turnCount'] = updates.turnCount;
     }
 
     if (updates.history !== undefined && updates.history.length > 0) {
       // Append to history array
-      updateExpressions.push('history = list_append(history, :history)');
+      updateExpressions.push('#history = list_append(history, :history)');
+      attributeNames['#history'] = 'history';
       attributeValues[':history'] = updates.history;
     }
 
     // Always update TTL
-    updateExpressions.push('ttl = :ttl');
+    updateExpressions.push('#ttl = :ttl');
+    attributeNames['#ttl'] = 'ttl';
     attributeValues[':ttl'] = ttl;
 
-    if (updateExpressions.length === 1 && updateExpressions[0] === 'ttl = :ttl') {
+    if (updateExpressions.length === 1 && updateExpressions[0] === '#ttl = :ttl') {
       // Only TTL is being updated, fetch current session to return
       const session = await getSession(sessionId);
       if (!session) {
@@ -171,21 +176,26 @@ const updateSession = async (sessionId: string, updates: Partial<SessionState>):
       return session;
     }
 
-    Logger.debug('SessionRepository.updateSession - sending UpdateCommand', {
-      sessionId,
-      updates: Object.keys(updates).filter((k) => k !== 'history'),
-      tableName,
-    });
-
     const command = new UpdateCommand({
       TableName: tableName,
       Key: { sessionId },
-      UpdateExpression: updateExpressions.join(', '),
+      UpdateExpression: `SET ${updateExpressions.join(', ')}`,
+      ExpressionAttributeNames: attributeNames,
       ExpressionAttributeValues: attributeValues,
       ReturnValues: 'ALL_NEW',
     });
 
+    Logger.debug('SessionRepository.updateSession - sending UpdateCommand', {
+      sessionId,
+      updateCommandInput: command.input,
+    });
+
     const result = await docClient.send(command);
+
+    Logger.debug('SessionRepository.updateSession - UpdateCommand result received', {
+      sessionId,
+      updateCommandOutput: result,
+    });
 
     if (!result.Attributes) {
       throw new Error(`Failed to retrieve updated session ${sessionId}`);
@@ -205,6 +215,10 @@ const updateSession = async (sessionId: string, updates: Partial<SessionState>):
 
     return validationResult.data;
   } catch (error) {
+    Logger.error('SessionRepository.updateSession - error updating session', {
+      sessionId,
+      error,
+    });
     throw new RepositoryError(`Failed to update session ${sessionId}`, 'updateSession', error);
   }
 };
