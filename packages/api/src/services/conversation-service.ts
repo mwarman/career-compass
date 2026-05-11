@@ -12,6 +12,9 @@ import {
   ConversationPhase,
 } from '@career-compass/shared';
 
+import { discoveryPrompt } from '../prompts/discovery-prompt';
+import { goalElicitationPrompt } from '../prompts/goal-elicitation-prompt';
+import { synthesisPrompt } from '../prompts/synthesis-prompt';
 import { SessionRepository } from '../repositories/session-repository';
 import {
   DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD,
@@ -19,6 +22,54 @@ import {
   SYNTHESIS_TRIGGER_PHRASE,
 } from '../utils/constants';
 import { Logger } from '../utils/logger';
+
+import { BedrockService } from './bedrock-service';
+
+/**
+ * Get the system prompt for the current conversation phase.
+ * @param phase - The current conversation phase
+ * @returns The appropriate system prompt string for the phase
+ */
+const getSystemPrompt = (phase: ConversationPhase): string => {
+  switch (phase) {
+    case 'discovery':
+      return discoveryPrompt;
+    case 'goalElicitation':
+      return goalElicitationPrompt;
+    case 'synthesis':
+      return synthesisPrompt;
+    default: {
+      // Exhaustive check; should never reach here with proper TypeScript
+      const _exhaustive: never = phase;
+      throw new Error(`Unknown conversation phase: ${_exhaustive}`);
+    }
+  }
+};
+
+/**
+ * Extract the readiness block from the assistant message.
+ * Looks for <readiness>true|false</readiness> pattern and returns the boolean value.
+ * @param message - The assistant message potentially containing a readiness block
+ * @returns The readiness boolean, or undefined if no valid block is found
+ */
+const extractReadiness = (message: string): boolean | undefined => {
+  const readinessRegex = /<readiness>(true|false)<\/readiness>/;
+  const match = message.match(readinessRegex);
+  if (match && match[1]) {
+    return match[1] === 'true';
+  }
+  return undefined;
+};
+
+/**
+ * Strip the readiness block from the assistant message.
+ * Removes the <readiness>true|false</readiness> pattern from the message.
+ * @param message - The assistant message potentially containing a readiness block
+ * @returns The message with the readiness block removed
+ */
+const stripReadiness = (message: string): string => {
+  return message.replace(/<readiness>(true|false)<\/readiness>/g, '').trim();
+};
 
 /**
  * Detect if a user message contains the synthesis trigger phrase (case-insensitive).
@@ -32,21 +83,21 @@ const detectSynthesisTrigger = (message: string): boolean => {
 /**
  * Determine the next phase based on current phase, turn count, and Bedrock evaluation.
  * Implements the phase transition state machine:
- * - discovery → goalElicitation: when turnCount >= threshold AND skill context sufficient (stub: false)
- * - goalElicitation → synthesis: trigger phrase OR turnCount >= max OR Bedrock ready (stub: false)
+ * - discovery → goalElicitation: when turnCount >= threshold AND skill context sufficient
+ * - goalElicitation → synthesis: trigger phrase OR turnCount >= max OR Bedrock ready
  * - Any phase → synthesis: when trigger phrase detected
  *
  * @param currentPhase - The current conversation phase
  * @param nextTurnCount - The turn count after incrementing
  * @param userMessage - The current user message to check for trigger phrase
- * @param bedrockReadyStub - Stub Bedrock self-evaluation result (always false in M4)
+ * @param bedrockReady - Bedrock's readiness evaluation (from readiness block)
  * @returns The phase to transition to
  */
 const determineNextPhase = (
   currentPhase: ConversationPhase,
   nextTurnCount: number,
   userMessage: string,
-  bedrockReadyStub: boolean,
+  bedrockReady: boolean,
 ): ConversationPhase => {
   // Any phase → synthesis: trigger phrase detected
   if (detectSynthesisTrigger(userMessage)) {
@@ -60,7 +111,7 @@ const determineNextPhase = (
 
   // discovery → goalElicitation: turn count threshold AND skill context sufficient
   if (currentPhase === 'discovery') {
-    if (nextTurnCount >= DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD && bedrockReadyStub) {
+    if (nextTurnCount >= DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD && bedrockReady) {
       return 'goalElicitation';
     }
     return 'discovery';
@@ -68,7 +119,7 @@ const determineNextPhase = (
 
   // goalElicitation → synthesis: turn count max OR Bedrock ready
   if (currentPhase === 'goalElicitation') {
-    if (nextTurnCount >= GOAL_ELICITATION_MAX_TURNS || bedrockReadyStub) {
+    if (nextTurnCount >= GOAL_ELICITATION_MAX_TURNS || bedrockReady) {
       return 'synthesis';
     }
     return 'goalElicitation';
@@ -80,8 +131,8 @@ const determineNextPhase = (
 
 /**
  * Process a single turn in the conversation.
- * Loads session state, determines phase, generates response (Bedrock stub in M4),
- * evaluates phase transitions, and persists updated state to DynamoDB.
+ * Loads session state, calls Bedrock with phase-aware prompt, evaluates phase transitions,
+ * and persists updated state to DynamoDB.
  *
  * @param session - The current session state
  * @param request - The user message request
@@ -98,17 +149,48 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
     // Increment turn count
     const nextTurnCount = session.turnCount + 1;
 
+    // Get the system prompt for the current phase
+    const systemPrompt = getSystemPrompt(session.phase);
+
+    Logger.debug('ConversationService.processTurn - calling Bedrock', {
+      sessionId: session.sessionId,
+      phase: session.phase,
+      messageCount: session.history.length,
+    });
+
+    // Call Bedrock with phase-aware prompt and conversation history
+    const bedrockResponse = await BedrockService.converse(systemPrompt, session.history);
+
+    Logger.debug('ConversationService.processTurn - Bedrock response received', {
+      sessionId: session.sessionId,
+      responseLength: bedrockResponse.length,
+    });
+
+    // Extract readiness from the response (if present in Discovery or Goal Elicitation phases)
+    const readiness = extractReadiness(bedrockResponse);
+    const bedrockReady = readiness === true;
+
+    Logger.debug('ConversationService.processTurn - readiness evaluated', {
+      sessionId: session.sessionId,
+      phase: session.phase,
+      readiness,
+      bedrockReady,
+    });
+
+    // Strip the readiness block from the response before sending to user
+    const assistantMessage = stripReadiness(bedrockResponse);
+
     // Log phase transition evaluation
     Logger.debug('ConversationService.processTurn - evaluating phase transition', {
       sessionId: session.sessionId,
       currentPhase: session.phase,
       nextTurnCount,
       triggerPhraseDetected: detectSynthesisTrigger(request.userMessage),
+      bedrockReady,
     });
 
-    // Determine next phase (stub Bedrock evaluation always returns false in M4)
-    const bedrockReadyStub = false;
-    const nextPhase = determineNextPhase(session.phase, nextTurnCount, request.userMessage, bedrockReadyStub);
+    // Determine next phase based on turn count, trigger phrase, and Bedrock readiness
+    const nextPhase = determineNextPhase(session.phase, nextTurnCount, request.userMessage, bedrockReady);
 
     // Log phase transition if changed
     if (nextPhase !== session.phase) {
@@ -120,9 +202,6 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
       });
     }
 
-    // Generate stub assistant response (Bedrock integration in M5)
-    const assistantMessage = `[${nextPhase}] Processing your message: ${request.userMessage}`;
-
     // Create response payload
     const response: ConversationalResponse = {
       type: 'conversational',
@@ -133,10 +212,11 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
       synthesisReady: nextPhase === 'synthesis',
     };
 
-    Logger.debug('ConversationService.processTurn - response generated', {
+    Logger.debug('ConversationService.processTurn - response created', {
       sessionId: session.sessionId,
       phase: response.phase,
       synthesisReady: response.synthesisReady,
+      messageLength: assistantMessage.length,
     });
 
     // Persist updated session state to DynamoDB
