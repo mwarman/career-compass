@@ -79,11 +79,11 @@ const converse = async (systemPrompt: string, messages: BedrockMessage[]): Promi
       hasOutput: !!response.output,
     });
 
-    if (!response.output || !('content' in response.output)) {
+    if (!response.output || !('message' in response.output)) {
       throw new BedrockError('Unexpected Bedrock response structure: missing output with content', response);
     }
 
-    const outputContent = response.output.content as ContentBlock[] | undefined;
+    const outputContent = response.output.message?.content as ContentBlock[] | undefined;
     if (!Array.isArray(outputContent) || outputContent.length === 0) {
       throw new BedrockError('Unexpected Bedrock response structure: missing or empty content array', response.output);
     }
@@ -148,6 +148,8 @@ const synthesize = async (systemPrompt: string, messages: BedrockMessage[]): Pro
 
     Logger.debug('BedrockService.synthesize - tool schema prepared', {
       hasInputSchema: !!toolSchema,
+      schema: toolSchema,
+      prompt: systemPrompt,
     });
 
     // Construct ConverseCommand input with forced tool use for generate_recommendation
@@ -199,13 +201,14 @@ const synthesize = async (systemPrompt: string, messages: BedrockMessage[]): Pro
     // Extract the response and look for toolUse block
     Logger.debug('BedrockService.synthesize - processing response', {
       hasOutput: !!response.output,
+      output: response.output,
     });
 
-    if (!response.output || !('content' in response.output)) {
+    if (!response.output || !('message' in response.output)) {
       throw new BedrockError('Unexpected Bedrock response structure: missing output with content', response);
     }
 
-    const outputContent = response.output.content as ContentBlock[] | undefined;
+    const outputContent = response.output.message?.content as ContentBlock[] | undefined;
     if (!Array.isArray(outputContent) || outputContent.length === 0) {
       throw new BedrockError('Unexpected Bedrock response structure: missing or empty content array', response.output);
     }
