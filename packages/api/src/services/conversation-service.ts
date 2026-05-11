@@ -23,6 +23,7 @@ import {
   SYNTHESIS_TRIGGER_PHRASE,
 } from '../utils/constants';
 import { Logger } from '../utils/logger';
+import { parseReadiness } from '../utils/readiness';
 
 import { BedrockService } from './bedrock-service';
 
@@ -45,31 +46,6 @@ const getSystemPrompt = (phase: ConversationPhase): string => {
       throw new Error(`Unknown conversation phase: ${_exhaustive}`);
     }
   }
-};
-
-/**
- * Extract the readiness block from the assistant message.
- * Looks for <readiness>true|false</readiness> pattern and returns the boolean value.
- * @param message - The assistant message potentially containing a readiness block
- * @returns The readiness boolean, or undefined if no valid block is found
- */
-const extractReadiness = (message: string): boolean | undefined => {
-  const readinessRegex = /<readiness>(true|false)<\/readiness>/;
-  const match = message.match(readinessRegex);
-  if (match && match[1]) {
-    return match[1] === 'true';
-  }
-  return undefined;
-};
-
-/**
- * Strip the readiness block from the assistant message.
- * Removes the <readiness>true|false</readiness> pattern from the message.
- * @param message - The assistant message potentially containing a readiness block
- * @returns The message with the readiness block removed
- */
-const stripReadiness = (message: string): string => {
-  return message.replace(/<readiness>(true|false)<\/readiness>/g, '').trim();
 };
 
 /**
@@ -240,19 +216,14 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
       responseLength: bedrockResponse.length,
     });
 
-    // Extract readiness from the response (if present in Discovery or Goal Elicitation phases)
-    const readiness = extractReadiness(bedrockResponse);
-    const bedrockReady = readiness === true;
+    // Parse readiness from the response and strip the block from the message
+    const { cleanedMessage: assistantMessage, ready: bedrockReady } = parseReadiness(bedrockResponse);
 
     Logger.debug('ConversationService.processTurn - readiness evaluated', {
       sessionId: session.sessionId,
       phase: session.phase,
-      readiness,
       bedrockReady,
     });
-
-    // Strip the readiness block from the response before sending to user
-    const assistantMessage = stripReadiness(bedrockResponse);
 
     // Log phase transition evaluation
     Logger.debug('ConversationService.processTurn - evaluating phase transition', {

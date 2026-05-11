@@ -380,4 +380,131 @@ describe('ConversationService', () => {
       expect(SYNTHESIS_TRIGGER_PHRASE.toLowerCase()).toBe('ready for recommendations');
     });
   });
+
+  describe('parseReadiness integration (AC-01, AC-02, AC-03)', () => {
+    it('should extract readiness from Bedrock response with true block', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+        turnCount: DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD - 1,
+      };
+
+      // Mock Bedrock to return response with readiness block (true)
+      (BedrockService.converse as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        'I believe you are ready <readiness>true</readiness> to move forward',
+      );
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      // Verify readiness block is stripped from assistant message
+      if (response.type === 'conversational') {
+        expect(response.assistantMessage).not.toContain('<readiness>');
+        expect(response.assistantMessage).toBe('I believe you are ready to move forward');
+        // Should advance phase when readiness is true and threshold is met
+        expect(response.phase).toBe('goalElicitation');
+      } else {
+        throw new Error('Expected conversational response');
+      }
+    });
+
+    it('should extract readiness from Bedrock response with false block', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+        turnCount: DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD - 1,
+      };
+
+      // Mock Bedrock to return response with readiness block (false)
+      (BedrockService.converse as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        'You need more information <readiness>false</readiness> before proceeding',
+      );
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      // Verify readiness block is stripped from assistant message
+      if (response.type === 'conversational') {
+        expect(response.assistantMessage).not.toContain('<readiness>');
+        expect(response.assistantMessage).toBe('You need more information before proceeding');
+        // Should stay in discovery when readiness is false
+        expect(response.phase).toBe('discovery');
+      } else {
+        throw new Error('Expected conversational response');
+      }
+    });
+
+    it('should handle missing readiness block and default to false', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+        turnCount: DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD - 1,
+      };
+
+      // Mock Bedrock to return response without readiness block
+      (BedrockService.converse as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        'This is a response without any readiness block',
+      );
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      // Should default to ready: false and stay in discovery
+      expect(response.phase).toBe('discovery');
+      if (response.type === 'conversational') {
+        expect(response.assistantMessage).toBe('This is a response without any readiness block');
+      } else {
+        throw new Error('Expected conversational response');
+      }
+    });
+
+    it('should advance to goalElicitation when readiness is true and threshold is met', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+        turnCount: DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD - 1,
+      };
+
+      (BedrockService.converse as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        'Your context is sufficient <readiness>true</readiness>',
+      );
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.phase).toBe('goalElicitation');
+    });
+
+    it('should advance to synthesis when readiness is true in goalElicitation', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'goalElicitation',
+        turnCount: 5,
+      };
+
+      (BedrockService.converse as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        'I have enough data <readiness>true</readiness> to make recommendations',
+      );
+
+      const response = await ConversationService.processTurn(session, mockRequest);
+
+      expect(response.phase).toBe('synthesis');
+    });
+
+    it('should persist cleaned message (no readiness XML) to DynamoDB history', async () => {
+      const session: SessionState = {
+        ...mockSession,
+        phase: 'discovery',
+      };
+
+      (BedrockService.converse as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+        'Clean this up <readiness>true</readiness> please',
+      );
+
+      await ConversationService.processTurn(session, mockRequest);
+
+      const updateCall = (SessionRepository.updateSession as ReturnType<typeof vi.fn>).mock.calls[0];
+      const historyArg = updateCall[1].history;
+      const assistantMessageInHistory = historyArg[1].content[0].text;
+
+      expect(assistantMessageInHistory).not.toContain('<readiness>');
+      expect(assistantMessageInHistory).toBe('Clean this up please');
+    });
+  });
 });
