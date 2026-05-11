@@ -102,19 +102,19 @@ Cross-package imports use the `@career-compass/*` scope and workspace resolution
 
 ## Testing Guidelines
 
-- **Testing Framework**: Use Jest for all unit tests. Configure test patterns to include files matching `*.test.ts`, `*.spec.ts`, and `__tests__` directories.
+- **Testing Framework**: Use Vitest for all unit tests. Configure test patterns to include files matching `*.test.ts`, `*.spec.ts`, and `__tests__` directories.
 
 - **Test Scope**: Focus on unit tests that validate business logic and edge cases. Test API handlers with mocked AWS SDK clients. Test React components with React Testing Library. Do not write end-to-end tests; these are out of scope for this project.
 
 - **Test Approach**: Follow AAA (Arrange, Act, Assert) pattern in tests, adding comments for each step. Arrange necessary preconditions and inputs, act on the system under test, and assert expected outcomes. Keep tests focused and avoid testing multiple behaviors in a single test case.
 
-- **Mocking Strategy**: Mock external dependencies (AWS SDK clients, Bedrock API, HTTP calls) using Jest's `jest.mock()`. Create realistic mock responses that match actual API schemas. Validate that mocks are called with expected arguments.
+- **Mocking Strategy**: Mock external dependencies (AWS SDK clients, Bedrock API, HTTP calls) using Vitests's `vi.mock()`. Create realistic mock responses that match actual API schemas. Validate that mocks are called with expected arguments.
 
 - **Assertions and Outcomes**: Assert on outcomes and behavior rather than implementation details. For example, test that a Lambda handler returns HTTP 200 with a structured response, not that it calls a specific internal function. Use descriptive assertion messages.
 
 - **Coverage Goals**: Aim for >80% line coverage on critical paths (handlers, state machines, validation logic). Coverage is a guide; prioritize meaningful tests over chasing 100% coverage.
 
-- **Async Testing**: Use `async/await` in tests. Return promises and use `await` or `.resolves`/`.rejects` matchers. Never use `done()` callbacks; modern Jest handles async tests seamlessly.
+- **Async Testing**: Use `async/await` in tests. Return promises and use `await` or `.resolves`/`.rejects` matchers. Never use `done()` callbacks; modern Vitest handles async tests seamlessly.
 
 - **Test Organization**: Group related tests with `describe()` blocks. Use `beforeEach()` and `afterEach()` for setup/teardown (e.g., clearing mocks, resetting state). Name tests descriptively with the format: "should [expected behavior] when [condition]".
 

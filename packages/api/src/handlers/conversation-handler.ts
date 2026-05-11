@@ -5,7 +5,7 @@
  */
 
 import { TurnRequestSchema, TurnRequest, SessionState } from '@career-compass/shared';
-import { APIGatewayProxyHandlerV2 } from 'aws-lambda';
+import { APIGatewayProxyEventV2 } from 'aws-lambda';
 
 import { SessionNotFoundError } from '../errors/session-not-found-error';
 import { ValidationError } from '../errors/validation-error';
@@ -15,10 +15,16 @@ import { ConversationService } from '../services/conversation-service';
 import { ok, created, errorResponse, badRequest } from '../utils/apigateway-response';
 import { Logger } from '../utils/logger';
 
+interface LambdaResponse {
+  statusCode: number;
+  headers: Record<string, string>;
+  body: string;
+}
+
 /**
  * Lambda handler for POST /conversation/turn
  */
-export const handler: APIGatewayProxyHandlerV2 = async (event) => {
+export const handler = async (event: APIGatewayProxyEventV2): Promise<LambdaResponse> => {
   const startTime = Date.now();
   const requestId = event.requestContext?.requestId || 'unknown';
 

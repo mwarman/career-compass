@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { Logger, LogContext } from '../logger';
 
 describe('logger', () => {
-  let consoleSpy: jest.SpyInstance;
+  let consoleSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+    consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
@@ -16,7 +18,7 @@ describe('logger', () => {
       Logger.log('info', 'Test message');
 
       expect(consoleSpy).toHaveBeenCalledTimes(1);
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.level).toBe('info');
       expect(logged.message).toBe('Test message');
       expect(logged.timestamp).toBeDefined();
@@ -29,7 +31,7 @@ describe('logger', () => {
       };
       Logger.log('debug', 'Processing turn', context);
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.sessionId).toBe('session-123');
       expect(logged.turnCount).toBe(2);
     });
@@ -38,7 +40,7 @@ describe('logger', () => {
       const error = new Error('Test error');
       Logger.log('error', 'An error occurred', { error });
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.error.message).toBe('Test error');
       expect(logged.error.type).toBe('Error');
       expect(logged.error.stack).toBeDefined();
@@ -47,7 +49,7 @@ describe('logger', () => {
     it('should handle non-Error objects as errors', () => {
       Logger.log('error', 'Caught unknown error', { error: 'string error' });
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.error.message).toBe('string error');
       expect(logged.error.type).toBe('string');
     });
@@ -59,7 +61,7 @@ describe('logger', () => {
         consoleSpy.mockClear();
         Logger.log(level, `Message at ${level}`);
 
-        const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+        const logged = consoleSpy.mock.calls[0][0];
         expect(logged.level).toBe(level);
       });
     });
@@ -67,7 +69,7 @@ describe('logger', () => {
     it('should include durationMs if provided', () => {
       Logger.log('info', 'Operation completed', { durationMs: 234 });
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.durationMs).toBe(234);
     });
   });
@@ -76,7 +78,7 @@ describe('logger', () => {
     it('debug() should call log with debug level', () => {
       Logger.debug('Debug message', { sessionId: 'test-123' });
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.level).toBe('debug');
       expect(logged.message).toBe('Debug message');
       expect(logged.sessionId).toBe('test-123');
@@ -85,7 +87,7 @@ describe('logger', () => {
     it('info() should call log with info level', () => {
       Logger.info('Info message');
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.level).toBe('info');
       expect(logged.message).toBe('Info message');
     });
@@ -93,14 +95,14 @@ describe('logger', () => {
     it('warn() should call log with warn level', () => {
       Logger.warn('Warning message');
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.level).toBe('warn');
     });
 
     it('error() should call log with error level', () => {
       Logger.error('Error message');
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.level).toBe('error');
     });
   });
@@ -114,7 +116,7 @@ describe('logger', () => {
       const error = new CustomError('Custom message');
       Logger.log('error', 'Test', { error });
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.error.message).toBe('Custom message');
       expect(logged.error.type).toBe('CustomError');
     });
@@ -123,7 +125,7 @@ describe('logger', () => {
       const error = new Error('Stack trace test');
       Logger.log('error', 'Test', { error });
 
-      const logged = JSON.parse(consoleSpy.mock.calls[0][0]);
+      const logged = consoleSpy.mock.calls[0][0];
       expect(logged.error.stack).toContain('Error: Stack trace test');
     });
   });

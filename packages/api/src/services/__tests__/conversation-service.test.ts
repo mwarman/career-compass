@@ -4,6 +4,7 @@
  */
 
 import { SessionState, TurnRequest } from '@career-compass/shared';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { SessionRepository } from '../../repositories/session-repository';
 import {
@@ -13,8 +14,8 @@ import {
 } from '../../utils/constants';
 import { ConversationService } from '../conversation-service';
 
-jest.mock('../../repositories/session-repository');
-jest.mock('../../utils/logger');
+vi.mock('../../repositories/session-repository');
+vi.mock('../../utils/logger');
 
 describe('ConversationService', () => {
   const mockSession: SessionState = {
@@ -31,15 +32,15 @@ describe('ConversationService', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (SessionRepository.updateSession as jest.Mock).mockResolvedValue({
+    vi.clearAllMocks();
+    (SessionRepository.updateSession as ReturnType<typeof vi.fn>).mockResolvedValue({
       ...mockSession,
       turnCount: 1,
     });
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('processTurn() - Basic behavior', () => {
@@ -83,7 +84,7 @@ describe('ConversationService', () => {
     it('should include history entries in persistence', async () => {
       await ConversationService.processTurn(mockSession, mockRequest);
 
-      const updateCall = (SessionRepository.updateSession as jest.Mock).mock.calls[0];
+      const updateCall = (SessionRepository.updateSession as ReturnType<typeof vi.fn>).mock.calls[0];
       const historyArg = updateCall[1].history;
 
       expect(historyArg).toBeDefined();

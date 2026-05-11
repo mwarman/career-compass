@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 
 import { RecommendationSchema, type Recommendation } from '../../schemas/recommendation-schema';
 import { getRecommendationToolSchema } from '../bedrock-tool-schema';

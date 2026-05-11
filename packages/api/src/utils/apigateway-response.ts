@@ -4,7 +4,7 @@
  * JSON bodies, and CORS headers.
  */
 
-interface APIGatewayResponse<_T = unknown> {
+interface APIGatewayResponse {
   statusCode: number;
   headers: Record<string, string>;
   body: string;
