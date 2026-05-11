@@ -9,6 +9,7 @@ import {
   TurnResponse,
   SessionState,
   ConversationalResponse,
+  SynthesisResponse,
   ConversationPhase,
 } from '@career-compass/shared';
 
@@ -134,9 +135,12 @@ const determineNextPhase = (
  * Loads session state, calls Bedrock with phase-aware prompt, evaluates phase transitions,
  * and persists updated state to DynamoDB.
  *
+ * For synthesis phase: calls BedrockService.synthesize() to generate structured recommendations.
+ * For other phases: calls BedrockService.converse() for multi-turn dialogue.
+ *
  * @param session - The current session state
  * @param request - The user message request
- * @returns The conversation turn response with updated session state
+ * @returns The conversation turn response (ConversationalResponse or SynthesisResponse)
  */
 const processTurn = async (session: SessionState, request: TurnRequest): Promise<TurnResponse> => {
   Logger.info('ConversationService.processTurn - entering', {
@@ -152,7 +156,77 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
     // Get the system prompt for the current phase
     const systemPrompt = getSystemPrompt(session.phase);
 
-    Logger.debug('ConversationService.processTurn - calling Bedrock', {
+    // Handle synthesis phase with forced tool use to generate recommendations
+    if (session.phase === 'synthesis') {
+      Logger.info('ConversationService.processTurn - synthesis phase detected', {
+        sessionId: session.sessionId,
+        turnCount: nextTurnCount,
+      });
+
+      try {
+        // Call Bedrock synthesize to generate structured recommendation
+        const recommendation = await BedrockService.synthesize(systemPrompt, session.history);
+
+        Logger.debug('ConversationService.processTurn - recommendation generated', {
+          sessionId: session.sessionId,
+          skillGapsCount: recommendation.skillGaps.length,
+          recommendationsCount: recommendation.recommendations.length,
+        });
+
+        // Create synthesis response
+        const response: SynthesisResponse = {
+          type: 'synthesis',
+          sessionId: session.sessionId,
+          phase: 'synthesis',
+          turnCount: nextTurnCount,
+          recommendation,
+        };
+
+        Logger.debug('ConversationService.processTurn - synthesis response created', {
+          sessionId: session.sessionId,
+          recommendationReady: !!recommendation,
+        });
+
+        // Persist updated session state to DynamoDB
+        Logger.debug('ConversationService.processTurn - persisting session', {
+          sessionId: session.sessionId,
+          phase: 'synthesis',
+          turnCount: nextTurnCount,
+        });
+
+        await SessionRepository.updateSession(session.sessionId, {
+          phase: 'synthesis',
+          turnCount: nextTurnCount,
+          history: [
+            {
+              role: 'user',
+              content: [{ type: 'text', text: request.userMessage }],
+            },
+            {
+              role: 'assistant',
+              content: [{ type: 'text', text: 'Recommendations generated using forced tool use.' }],
+            },
+          ],
+        });
+
+        Logger.info('ConversationService.processTurn - exiting with synthesis response', {
+          sessionId: session.sessionId,
+          phase: 'synthesis',
+          turnCount: nextTurnCount,
+        });
+
+        return response;
+      } catch (error) {
+        Logger.error('ConversationService.processTurn - synthesis error', {
+          sessionId: session.sessionId,
+          error,
+        });
+        throw error;
+      }
+    }
+
+    // Handle non-synthesis phases with conversational Bedrock API
+    Logger.debug('ConversationService.processTurn - calling Bedrock converse', {
       sessionId: session.sessionId,
       phase: session.phase,
       messageCount: session.history.length,
