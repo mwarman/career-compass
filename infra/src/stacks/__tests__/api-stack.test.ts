@@ -81,7 +81,7 @@ describe('ApiStack', () => {
           Variables: cdk.assertions.Match.objectLike({
             SESSION_TABLE_NAME: cdk.assertions.Match.anyValue(),
             BEDROCK_REGION: 'us-east-1',
-            BEDROCK_MODEL_ID: 'anthropic.claude-haiku-4-5-20251001-v1:0',
+            BEDROCK_MODEL_ID: 'us.anthropic.claude-haiku-4-5-20251001-v1:0',
             CONVERSATION_MAX_TURNS: '10',
           }),
         },
