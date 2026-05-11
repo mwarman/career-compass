@@ -7,14 +7,16 @@ import { z } from 'zod';
  */
 const configSchema = z.object({
   // DynamoDB configuration
-  dynamodbTableName: z.string().min(1, 'DYNAMODB_TABLE_NAME is required'),
+  SESSION_TABLE_NAME: z.string().min(1, 'SESSION_TABLE_NAME is required'),
 
   // Bedrock configuration
-  bedrockRegion: z.string().min(1, 'BEDROCK_REGION is required'),
-  bedrockModelId: z.string().min(1, 'BEDROCK_MODEL_ID is required'),
+  BEDROCK_REGION: z.string().min(1, 'BEDROCK_REGION is required'),
+  BEDROCK_MODEL_ID: z.string().min(1, 'BEDROCK_MODEL_ID is required'),
+
+  CONVERSATION_MAX_TURNS: z.coerce.number().positive().default(10),
 
   // Node environment (defaults to 'development' if not set)
-  nodeEnv: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
 export type Config = z.infer<typeof configSchema>;
@@ -24,14 +26,7 @@ export type Config = z.infer<typeof configSchema>;
  * Throws an error if validation fails, ensuring fail-fast behavior on cold start.
  */
 const parseConfig = (): Config => {
-  const raw = {
-    dynamodbTableName: process.env.DYNAMODB_TABLE_NAME,
-    bedrockRegion: process.env.BEDROCK_REGION,
-    bedrockModelId: process.env.BEDROCK_MODEL_ID,
-    nodeEnv: process.env.NODE_ENV,
-  };
-
-  const result = configSchema.safeParse(raw);
+  const result = configSchema.safeParse(process.env);
 
   if (!result.success) {
     const errors = result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
