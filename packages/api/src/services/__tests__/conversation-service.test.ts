@@ -43,6 +43,26 @@ describe('ConversationService', () => {
     (BedrockService.converse as ReturnType<typeof vi.fn>).mockResolvedValue(
       'This is a helpful assistant response without readiness block.',
     );
+    // Mock Bedrock synthesize to return a valid recommendation
+    (BedrockService.synthesize as ReturnType<typeof vi.fn>).mockResolvedValue({
+      profileSummary: 'Test profile summary',
+      skillGaps: [
+        {
+          name: 'Test Skill Gap',
+          severity: 'high',
+          rationale: 'Test rationale',
+        },
+      ],
+      recommendations: [
+        {
+          area: 'Test Learning Area',
+          rationale: 'Test recommendation rationale',
+          resourceCategories: ['Test'],
+          estimatedEffort: 'moderate',
+          estimatedTimeline: '1-2 months',
+        },
+      ],
+    });
   });
 
   afterEach(() => {
@@ -258,6 +278,7 @@ describe('ConversationService', () => {
 
       const response = await ConversationService.processTurn(session, mockRequest);
 
+      expect(response.type).toBe('synthesis');
       expect(response.phase).toBe('synthesis');
     });
 
@@ -270,10 +291,10 @@ describe('ConversationService', () => {
 
       const response = await ConversationService.processTurn(session, mockRequest);
 
-      if (response.type === 'conversational') {
-        expect(response.synthesisReady).toBe(true);
-      } else {
-        throw new Error('Expected conversational response in synthesis phase');
+      expect(response.type).toBe('synthesis');
+      if (response.type === 'synthesis') {
+        expect(response.recommendation).toBeDefined();
+        expect(response.recommendation.profileSummary).toBeDefined();
       }
     });
 
