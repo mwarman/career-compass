@@ -10,7 +10,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "test": "vitest run --silent",
     "test:coverage": "vitest run --coverage --silent",
-    "clean": "rimraf dist"
+    "clean": "rimraf coverage dist"
   },
   "dependencies": {
     "@career-compass/shared": "*",
