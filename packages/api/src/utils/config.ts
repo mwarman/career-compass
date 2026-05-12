@@ -13,7 +13,8 @@ const configSchema = z.object({
   BEDROCK_REGION: z.string().min(1, 'BEDROCK_REGION is required'),
   BEDROCK_MODEL_ID: z.string().min(1, 'BEDROCK_MODEL_ID is required'),
   BEDROCK_TEMPERATURE: z.coerce.number().min(0).max(1).default(0.7),
-  BEDROCK_MAX_TOKENS: z.coerce.number().positive().default(1024),
+  BEDROCK_MAX_TOKENS_DEFAULT: z.coerce.number().positive().default(1024),
+  BEDROCK_MAX_TOKENS_SYNTHESIS: z.coerce.number().positive().default(3072),
 
   CONVERSATION_MAX_TURNS: z.coerce.number().positive().default(10),
 

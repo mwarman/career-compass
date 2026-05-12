@@ -83,9 +83,10 @@ export class ApiStack extends cdk.Stack {
       environment: {
         SESSION_TABLE_NAME: props.sessionTable.tableName,
         BEDROCK_REGION: 'us-east-1', // Bedrock availability: configure in cdk.json context if needed
-        BEDROCK_MODEL_ID: 'anthropic.claude-haiku-4-5-20251001-v1:0',
+        BEDROCK_MODEL_ID: 'us.anthropic.claude-haiku-4-5-20251001-v1:0',
         BEDROCK_TEMPERATURE: '0.7',
-        BEDROCK_MAX_TOKENS: '1024',
+        BEDROCK_MAX_TOKENS_DEFAULT: '1024',
+        BEDROCK_MAX_TOKENS_SYNTHESIS: '3072',
         CONVERSATION_MAX_TURNS: '10', // Phase state machine max turns
       },
 
@@ -103,9 +104,11 @@ export class ApiStack extends cdk.Stack {
         actions: ['bedrock:InvokeModel'],
         resources: [
           // Allow invoking the specific Claude Haiku model (ARN format for Bedrock models)
-          `arn:aws:bedrock:us-east-1::model/anthropic.claude-haiku-4-5-20251001-v1:0`,
+          `arn:aws:bedrock:us-east-1:${cdk.Aws.ACCOUNT_ID}:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0`,
           // Also allow general pattern for Bedrock models if needed for flexibility
-          `arn:aws:bedrock:us-east-1::model/anthropic.claude*`,
+          `arn:aws:bedrock:us-east-1:${cdk.Aws.ACCOUNT_ID}:inference-profile/us.anthropic.claude*`,
+          // TODO: Need to figure out the exact ARN format for Bedrock models and update this policy accordingly. The above is a best guess based on typical AWS ARN patterns and may need adjustment.
+          `*`,
         ],
       }),
     );

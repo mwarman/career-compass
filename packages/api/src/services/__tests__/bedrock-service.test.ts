@@ -58,11 +58,13 @@ describe('BedrockService', () => {
       const expectedResponse = 'I recommend focusing on JavaScript and React skills.';
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              text: expectedResponse,
-            },
-          ],
+          message: {
+            content: [
+              {
+                text: expectedResponse,
+              },
+            ],
+          },
         },
       });
 
@@ -78,11 +80,13 @@ describe('BedrockService', () => {
       // Arrange
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              text: 'Response text',
-            },
-          ],
+          message: {
+            content: [
+              {
+                text: 'Response text',
+              },
+            ],
+          },
         },
       });
 
@@ -122,7 +126,9 @@ describe('BedrockService', () => {
       // Arrange
       mockSend.mockResolvedValue({
         output: {
-          content: [],
+          message: {
+            content: [],
+          },
         },
       });
 
@@ -136,11 +142,13 @@ describe('BedrockService', () => {
       // Arrange
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              image: { source: { bytes: 'not-a-text-response' } }, // Image block instead of text
-            },
-          ],
+          message: {
+            content: [
+              {
+                image: { source: { bytes: 'not-a-text-response' } }, // Image block instead of text
+              },
+            ],
+          },
         },
       });
 
@@ -154,11 +162,13 @@ describe('BedrockService', () => {
       // Arrange
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              text: '', // Empty text
-            },
-          ],
+          message: {
+            content: [
+              {
+                text: '', // Empty text
+              },
+            ],
+          },
         },
       });
 
@@ -172,11 +182,13 @@ describe('BedrockService', () => {
       // Arrange
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              // Missing text property
-            },
-          ],
+          message: {
+            content: [
+              {
+                // Missing text property
+              },
+            ],
+          },
         },
       });
 
@@ -207,11 +219,13 @@ describe('BedrockService', () => {
 
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              text: 'Final response',
-            },
-          ],
+          message: {
+            content: [
+              {
+                text: 'Final response',
+              },
+            ],
+          },
         },
       });
 
@@ -229,11 +243,13 @@ describe('BedrockService', () => {
       const emptyHistory: BedrockMessage[] = [];
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              text: 'Initial response',
-            },
-          ],
+          message: {
+            content: [
+              {
+                text: 'Initial response',
+              },
+            ],
+          },
         },
       });
 
@@ -270,14 +286,16 @@ describe('BedrockService', () => {
 
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                name: 'generate_recommendation',
-                input: validRecommendation,
+          message: {
+            content: [
+              {
+                toolUse: {
+                  name: 'generate_recommendation',
+                  input: validRecommendation,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 
@@ -327,14 +345,16 @@ describe('BedrockService', () => {
 
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                name: 'generate_recommendation',
-                input: complexRecommendation,
+          message: {
+            content: [
+              {
+                toolUse: {
+                  name: 'generate_recommendation',
+                  input: complexRecommendation,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 
@@ -354,11 +374,13 @@ describe('BedrockService', () => {
       // Arrange
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              text: 'This is regular text, not a tool use block',
-            },
-          ],
+          message: {
+            content: [
+              {
+                text: 'This is regular text, not a tool use block',
+              },
+            ],
+          },
         },
       });
 
@@ -372,14 +394,16 @@ describe('BedrockService', () => {
       // Arrange
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                name: 'wrong_tool_name',
-                input: { some: 'data' },
+          message: {
+            content: [
+              {
+                toolUse: {
+                  name: 'wrong_tool_name',
+                  input: { some: 'data' },
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 
@@ -393,7 +417,9 @@ describe('BedrockService', () => {
       // Arrange
       mockSend.mockResolvedValue({
         output: {
-          content: [],
+          message: {
+            content: [],
+          },
         },
       });
 
@@ -419,14 +445,16 @@ describe('BedrockService', () => {
       // Arrange
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                input: { some: 'data' },
-                // Missing name field
+          message: {
+            content: [
+              {
+                toolUse: {
+                  input: { some: 'data' },
+                  // Missing name field
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 
@@ -456,14 +484,16 @@ describe('BedrockService', () => {
 
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                name: 'generate_recommendation',
-                input: invalidRecommendation,
+          message: {
+            content: [
+              {
+                toolUse: {
+                  name: 'generate_recommendation',
+                  input: invalidRecommendation,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 
@@ -495,14 +525,16 @@ describe('BedrockService', () => {
 
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                name: 'generate_recommendation',
-                input: invalidRecommendation,
+          message: {
+            content: [
+              {
+                toolUse: {
+                  name: 'generate_recommendation',
+                  input: invalidRecommendation,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 
@@ -533,14 +565,16 @@ describe('BedrockService', () => {
 
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                name: 'generate_recommendation',
-                input: invalidRecommendation,
+          message: {
+            content: [
+              {
+                toolUse: {
+                  name: 'generate_recommendation',
+                  input: invalidRecommendation,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 
@@ -568,14 +602,16 @@ describe('BedrockService', () => {
 
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                name: 'generate_recommendation',
-                input: invalidRecommendation,
+          message: {
+            content: [
+              {
+                toolUse: {
+                  name: 'generate_recommendation',
+                  input: invalidRecommendation,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 
@@ -601,14 +637,16 @@ describe('BedrockService', () => {
 
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                name: 'generate_recommendation',
-                input: invalidRecommendation,
+          message: {
+            content: [
+              {
+                toolUse: {
+                  name: 'generate_recommendation',
+                  input: invalidRecommendation,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 
@@ -677,14 +715,16 @@ describe('BedrockService', () => {
 
       mockSend.mockResolvedValue({
         output: {
-          content: [
-            {
-              toolUse: {
-                name: 'generate_recommendation',
-                input: validRecommendation,
+          message: {
+            content: [
+              {
+                toolUse: {
+                  name: 'generate_recommendation',
+                  input: validRecommendation,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       });
 

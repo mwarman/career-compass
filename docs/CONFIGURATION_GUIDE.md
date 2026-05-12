@@ -47,11 +47,13 @@ Each package has a typed config module that validates and provides access to env
 import { config, getConfig } from '@career-compass/api/src/utils/config';
 
 // Access via singleton
-const tableName = config.dynamodbTableName;
-const region = config.bedrockRegion;
+const sessionTableName = config.SESSION_TABLE_NAME;
+const region = config.BEDROCK_REGION;
+const modelId = config.BEDROCK_MODEL_ID;
+const temperature = config.BEDROCK_TEMPERATURE;
 
 // Or use helper function
-const modelId = getConfig('bedrockModelId');
+const maxTokens = getConfig('BEDROCK_MAX_TOKENS_DEFAULT');
 ```
 
 #### Web Package
@@ -72,9 +74,13 @@ const mode = getConfig('mode');
 
 Environment variables are injected by the CDK `ApiStack` at deployment time:
 
-- `DYNAMODB_TABLE_NAME`: Passed from the `StorageStack`
-- `BEDROCK_REGION`: Configured in CDK context
-- `BEDROCK_MODEL_ID`: Configured in CDK context
+- `SESSION_TABLE_NAME`: Passed from the `StorageStack`
+- `BEDROCK_REGION`: Configured in CDK context (default: `us-east-1`)
+- `BEDROCK_MODEL_ID`: Configured in CDK context (Claude model ARN)
+- `BEDROCK_TEMPERATURE`: LLM temperature parameter (default: `0.7`)
+- `BEDROCK_MAX_TOKENS_DEFAULT`: Max tokens for standard responses (default: `1024`)
+- `BEDROCK_MAX_TOKENS_SYNTHESIS`: Max tokens for synthesis responses (default: `3072`)
+- `CONVERSATION_MAX_TURNS`: Max turns before forcing synthesis (default: `10`)
 - `NODE_ENV`: Set to `production`
 
 ### Web (Frontend)
@@ -105,13 +111,17 @@ The CDK application itself:
 
 **Required Variables**:
 
-- `DYNAMODB_TABLE_NAME`: DynamoDB table for storing conversations
+- `SESSION_TABLE_NAME`: DynamoDB table for storing conversation sessions
 - `BEDROCK_REGION`: AWS region with Bedrock models
-- `BEDROCK_MODEL_ID`: Claude model identifier
+- `BEDROCK_MODEL_ID`: Claude model identifier (e.g., `us.anthropic.claude-haiku-4-5-20251001-v1:0`)
 
 **Optional Variables**:
 
-- `NODE_ENV`: `development` (default) or `production`
+- `BEDROCK_TEMPERATURE`: Temperature for Bedrock inference, range 0-1 (default: `0.7`)
+- `BEDROCK_MAX_TOKENS_DEFAULT`: Maximum tokens for standard responses (default: `1024`)
+- `BEDROCK_MAX_TOKENS_SYNTHESIS`: Maximum tokens for synthesis/recommendation responses (default: `3072`)
+- `CONVERSATION_MAX_TURNS`: Maximum conversation turns before forcing synthesis phase (default: `10`)
+- `NODE_ENV`: `development`, `production`, or `test` (default: `development`)
 
 ### packages/web
 

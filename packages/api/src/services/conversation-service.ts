@@ -132,6 +132,15 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
     // Get the system prompt for the current phase
     const systemPrompt = getSystemPrompt(session.phase);
 
+    // Append current user message to conversation history
+    const conversationWithUserMessage = [
+      ...session.history,
+      {
+        role: 'user' as const,
+        content: [{ type: 'text', text: request.userMessage }],
+      },
+    ];
+
     // Handle synthesis phase with forced tool use to generate recommendations
     if (session.phase === 'synthesis') {
       Logger.info('ConversationService.processTurn - synthesis phase detected', {
@@ -141,7 +150,7 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
 
       try {
         // Call Bedrock synthesize to generate structured recommendation
-        const recommendation = await BedrockService.synthesize(systemPrompt, session.history);
+        const recommendation = await BedrockService.synthesize(systemPrompt, conversationWithUserMessage);
 
         Logger.debug('ConversationService.processTurn - recommendation generated', {
           sessionId: session.sessionId,
@@ -209,7 +218,7 @@ const processTurn = async (session: SessionState, request: TurnRequest): Promise
     });
 
     // Call Bedrock with phase-aware prompt and conversation history
-    const bedrockResponse = await BedrockService.converse(systemPrompt, session.history);
+    const bedrockResponse = await BedrockService.converse(systemPrompt, conversationWithUserMessage);
 
     Logger.debug('ConversationService.processTurn - Bedrock response received', {
       sessionId: session.sessionId,

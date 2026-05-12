@@ -59,14 +59,14 @@ const converse = async (systemPrompt: string, messages: BedrockMessage[]): Promi
       messages: messages,
       inferenceConfig: {
         temperature: config.BEDROCK_TEMPERATURE,
-        maxTokens: config.BEDROCK_MAX_TOKENS,
+        maxTokens: config.BEDROCK_MAX_TOKENS_DEFAULT,
       },
     };
 
     Logger.debug('BedrockService.converse - calling ConverseCommand', {
       modelId: config.BEDROCK_MODEL_ID,
       temperature: config.BEDROCK_TEMPERATURE,
-      maxTokens: config.BEDROCK_MAX_TOKENS,
+      maxTokens: config.BEDROCK_MAX_TOKENS_DEFAULT,
     });
 
     // Execute the ConverseCommand
@@ -79,11 +79,11 @@ const converse = async (systemPrompt: string, messages: BedrockMessage[]): Promi
       hasOutput: !!response.output,
     });
 
-    if (!response.output || !('content' in response.output)) {
+    if (!response.output || !('message' in response.output)) {
       throw new BedrockError('Unexpected Bedrock response structure: missing output with content', response);
     }
 
-    const outputContent = response.output.content as ContentBlock[] | undefined;
+    const outputContent = response.output.message?.content as ContentBlock[] | undefined;
     if (!Array.isArray(outputContent) || outputContent.length === 0) {
       throw new BedrockError('Unexpected Bedrock response structure: missing or empty content array', response.output);
     }
@@ -148,6 +148,8 @@ const synthesize = async (systemPrompt: string, messages: BedrockMessage[]): Pro
 
     Logger.debug('BedrockService.synthesize - tool schema prepared', {
       hasInputSchema: !!toolSchema,
+      schema: toolSchema,
+      prompt: systemPrompt,
     });
 
     // Construct ConverseCommand input with forced tool use for generate_recommendation
@@ -162,7 +164,7 @@ const synthesize = async (systemPrompt: string, messages: BedrockMessage[]): Pro
       messages: messages,
       inferenceConfig: {
         temperature: config.BEDROCK_TEMPERATURE,
-        maxTokens: config.BEDROCK_MAX_TOKENS,
+        maxTokens: config.BEDROCK_MAX_TOKENS_SYNTHESIS,
       },
       toolConfig: {
         tools: [
@@ -190,6 +192,8 @@ const synthesize = async (systemPrompt: string, messages: BedrockMessage[]): Pro
     Logger.debug('BedrockService.synthesize - calling ConverseCommand with forced tool use', {
       modelId: config.BEDROCK_MODEL_ID,
       toolName: 'generate_recommendation',
+      temperature: config.BEDROCK_TEMPERATURE,
+      maxTokens: config.BEDROCK_MAX_TOKENS_SYNTHESIS,
     });
 
     // Execute the ConverseCommand with forced tool use
@@ -199,13 +203,14 @@ const synthesize = async (systemPrompt: string, messages: BedrockMessage[]): Pro
     // Extract the response and look for toolUse block
     Logger.debug('BedrockService.synthesize - processing response', {
       hasOutput: !!response.output,
+      output: response.output,
     });
 
-    if (!response.output || !('content' in response.output)) {
+    if (!response.output || !('message' in response.output)) {
       throw new BedrockError('Unexpected Bedrock response structure: missing output with content', response);
     }
 
-    const outputContent = response.output.content as ContentBlock[] | undefined;
+    const outputContent = response.output.message?.content as ContentBlock[] | undefined;
     if (!Array.isArray(outputContent) || outputContent.length === 0) {
       throw new BedrockError('Unexpected Bedrock response structure: missing or empty content array', response.output);
     }
