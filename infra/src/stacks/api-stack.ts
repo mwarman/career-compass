@@ -85,7 +85,8 @@ export class ApiStack extends cdk.Stack {
         BEDROCK_REGION: 'us-east-1', // Bedrock availability: configure in cdk.json context if needed
         BEDROCK_MODEL_ID: 'us.anthropic.claude-haiku-4-5-20251001-v1:0',
         BEDROCK_TEMPERATURE: '0.7',
-        BEDROCK_MAX_TOKENS: '4096',
+        BEDROCK_MAX_TOKENS_DEFAULT: '1024',
+        BEDROCK_MAX_TOKENS_SYNTHESIS: '3072',
         CONVERSATION_MAX_TURNS: '10', // Phase state machine max turns
       },
 

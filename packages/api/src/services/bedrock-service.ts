@@ -59,14 +59,14 @@ const converse = async (systemPrompt: string, messages: BedrockMessage[]): Promi
       messages: messages,
       inferenceConfig: {
         temperature: config.BEDROCK_TEMPERATURE,
-        maxTokens: config.BEDROCK_MAX_TOKENS,
+        maxTokens: config.BEDROCK_MAX_TOKENS_DEFAULT,
       },
     };
 
     Logger.debug('BedrockService.converse - calling ConverseCommand', {
       modelId: config.BEDROCK_MODEL_ID,
       temperature: config.BEDROCK_TEMPERATURE,
-      maxTokens: config.BEDROCK_MAX_TOKENS,
+      maxTokens: config.BEDROCK_MAX_TOKENS_DEFAULT,
     });
 
     // Execute the ConverseCommand
@@ -164,7 +164,7 @@ const synthesize = async (systemPrompt: string, messages: BedrockMessage[]): Pro
       messages: messages,
       inferenceConfig: {
         temperature: config.BEDROCK_TEMPERATURE,
-        maxTokens: config.BEDROCK_MAX_TOKENS,
+        maxTokens: config.BEDROCK_MAX_TOKENS_SYNTHESIS,
       },
       toolConfig: {
         tools: [
