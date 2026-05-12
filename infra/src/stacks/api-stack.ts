@@ -97,18 +97,32 @@ export class ApiStack extends cdk.Stack {
 
     props.sessionTable.grantReadWriteData(this.conversationFunction); // Grant Lambda permissions to read/write session data
 
-    // IAM Policy for Bedrock InvokeModel on the configured Claude Haiku model
+    // IAM Policy for Bedrock InvokeModel on the configured Claude Haiku model with conditions to restrict to the specific model and inference profile
     this.conversationFunction.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ['bedrock:InvokeModel'],
         resources: [
-          // Allow invoking the specific Claude Haiku model (ARN format for Bedrock models)
+          // Allow invoking the specific Claude Haiku inference profile across regions (adjust if using a different model or region)
           `arn:aws:bedrock:us-east-1:${cdk.Aws.ACCOUNT_ID}:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0`,
-          // Also allow general pattern for Bedrock models if needed for flexibility
-          `arn:aws:bedrock:us-east-1:${cdk.Aws.ACCOUNT_ID}:inference-profile/us.anthropic.claude*`,
-          // TODO: Need to figure out the exact ARN format for Bedrock models and update this policy accordingly. The above is a best guess based on typical AWS ARN patterns and may need adjustment.
-          `*`,
+        ],
+      }),
+    );
+    // IAM Policy with condition to restrict Bedrock model invocation to the specific Claude Haiku inference profile
+    this.conversationFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        conditions: {
+          StringLike: {
+            'bedrock:InferenceProfileArn': `arn:aws:bedrock:us-east-1:${cdk.Aws.ACCOUNT_ID}:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0`,
+          },
+        },
+        effect: iam.Effect.ALLOW,
+        actions: ['bedrock:InvokeModel'],
+        resources: [
+          // Allow invoking the specific Claude Haiku model across regions (adjust if using a different model or region)
+          'arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0',
+          'arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0',
+          'arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0',
         ],
       }),
     );
