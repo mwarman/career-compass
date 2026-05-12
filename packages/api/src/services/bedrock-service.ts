@@ -192,6 +192,8 @@ const synthesize = async (systemPrompt: string, messages: BedrockMessage[]): Pro
     Logger.debug('BedrockService.synthesize - calling ConverseCommand with forced tool use', {
       modelId: config.BEDROCK_MODEL_ID,
       toolName: 'generate_recommendation',
+      temperature: config.BEDROCK_TEMPERATURE,
+      maxTokens: config.BEDROCK_MAX_TOKENS_SYNTHESIS,
     });
 
     // Execute the ConverseCommand with forced tool use
