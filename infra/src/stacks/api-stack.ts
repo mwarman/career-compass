@@ -138,7 +138,6 @@ export class ApiStack extends cdk.Stack {
         dataTraceEnabled: false, // Disable request/response body logging for privacy
       },
       defaultCorsPreflightOptions: {
-        // AC-04: CORS enabled for portfolio demo (allow all origins)
         // NOTE: In production, restrict to specific frontend domain
         allowOrigins: ['*'],
         allowMethods: ['POST', 'OPTIONS'],
@@ -164,11 +163,9 @@ export class ApiStack extends cdk.Stack {
     const turnResource = conversationResource.addResource('turn');
 
     // Add POST method with Lambda integration
-    // AC-03: POST /conversation/turn resource with Lambda integration
     turnResource.addMethod('POST', new apigateway.LambdaIntegration(this.conversationFunction));
 
     // Export API URL for use by FrontendStack and local development
-    // AC-05: API URL exported as CfnOutput named ConversationApiUrl
     new cdk.CfnOutput(this, 'ConversationApiUrlOutput', {
       value: this.api.url,
       exportName: ApiStack.CONVERSATION_API_URL_EXPORT,

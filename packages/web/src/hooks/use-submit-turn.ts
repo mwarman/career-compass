@@ -16,8 +16,14 @@ export interface SubmitTurnVariables {
  */
 export interface SubmitTurnResult {
   isPending: boolean;
-  mutate: (variables: SubmitTurnVariables) => void;
-  mutateAsync: (variables: SubmitTurnVariables) => Promise<void>;
+  mutate: (
+    variables: SubmitTurnVariables,
+    options?: Omit<UseMutationOptions<void, Error, SubmitTurnVariables>, 'mutationFn'>,
+  ) => void;
+  mutateAsync: (
+    variables: SubmitTurnVariables,
+    options?: Omit<UseMutationOptions<void, Error, SubmitTurnVariables>, 'mutationFn'>,
+  ) => Promise<void>;
   isError: boolean;
   error: APIError | null;
 }

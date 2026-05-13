@@ -36,7 +36,7 @@ Cross-package imports use the `@career-compass/*` scope and workspace resolution
 
 - **Modules vs Classes**: Favor modules and functions over classes. Use plain objects and functions for state management and logic. Classes may be used for complex data structures if justified.
 
-- **Naming Conventions**: Use camelCase for variables and functions, PascalCase for types and components. Prefix unused parameters with underscore (e.g., `_unused`). Use kebab-case for file names (e.g., `conversation-handler.ts`).
+- **Naming Conventions**: Use camelCase for variables and functions, PascalCase for types and components. Prefix unused parameters with underscore (e.g., `_unused`). Use kebab-case as the default for file names (e.g., `conversation-handler.ts`); use PascalCase for React web component file names (e.g., ChatPage.tsx).
 
 - **Import Organization**: Order imports as (1) Node.js builtins, (2) third-party packages, (3) internal imports, (4) relative paths. Use absolute imports via `@career-compass/*` scope for cross-package references and `@/*` for web package internal paths.
 

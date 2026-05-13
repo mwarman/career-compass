@@ -4,34 +4,34 @@ import { describe, expect, it } from 'vitest';
 import { App } from './App';
 
 describe('App', () => {
-  it('should render without crashing', () => {
-    const { container } = render(<App />);
-    expect(container).toBeTruthy();
-  });
-
-  it('should render the main heading', () => {
+  it('should render the ChatPage component', () => {
     render(<App />);
     const heading = screen.getByRole('heading', { level: 1, name: /career compass/i });
     expect(heading).toBeTruthy();
   });
 
-  it('should render the Button component', () => {
+  it('should render the message input field', () => {
     render(<App />);
-    const button = screen.getByRole('button', { name: /get started/i });
+    const input = screen.getByPlaceholderText('Type your message...');
+    expect(input).toBeTruthy();
+  });
+
+  it('should render the Send button', () => {
+    render(<App />);
+    const button = screen.getByRole('button', { name: /send message/i });
     expect(button).toBeTruthy();
   });
 
-  it('should render Tailwind test element with bg-blue-500 class', () => {
-    const { container } = render(<App />);
-    const testDiv = container.querySelector('.bg-blue-500');
-    expect(testDiv).toBeTruthy();
-    expect(testDiv?.textContent).toContain('Tailwind styling test');
+  it('should render the phase badge', () => {
+    render(<App />);
+    const badge = screen.getByText('Discovery');
+    expect(badge).toBeTruthy();
   });
 
-  it('should have QueryClientProvider as root provider', () => {
+  it('should have QueryClientProvider and SessionProvider as root providers', () => {
     const { container } = render(<App />);
-    // The App component is wrapped with QueryClientProvider
-    // We verify the content renders, which proves the provider is working
+    // The App component is wrapped with QueryClientProvider and SessionProvider
+    // We verify the content renders, which proves both providers are working
     expect(container.querySelector('h1')).toBeTruthy();
   });
 });
