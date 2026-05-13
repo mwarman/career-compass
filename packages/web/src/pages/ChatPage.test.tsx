@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ChatPage } from './chat-page';
+import { ChatPage } from './ChatPage';
 
 import { useSession } from '@/context/session-context';
 import { useSubmitTurn } from '@/hooks/use-submit-turn';

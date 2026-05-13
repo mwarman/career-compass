@@ -1,7 +1,7 @@
 import { JSX, useEffect, useRef, useState } from 'react';
 
-import { MessageBubble } from '@/components/chat/message-bubble';
-import { PhaseLabel } from '@/components/chat/phase-label';
+import { MessageBubble } from '@/components/chat/MessageBubble';
+import { PhaseLabel } from '@/components/chat/PhaseLabel';
 import { Button } from '@/components/shadcn/button';
 import { Input } from '@/components/shadcn/input';
 import { Label } from '@/components/shadcn/label';
