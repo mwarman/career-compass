@@ -27,9 +27,7 @@ export const SeedMessage = (): JSX.Element => {
               <li>Your career goals and aspirations</li>
             </ul>
             <Separator className="my-4" />
-            <p className="text-sm">
-              I am a [your current role] with [X] years of experience. I am looking to [your career goal].
-            </p>
+            <p>I am a [your current role] with [X] years of experience. I am looking to [your career goal].</p>
           </div>
           <p className="text-muted-foreground text-xs">Press Enter to submit your message</p>
         </EmptyContent>
