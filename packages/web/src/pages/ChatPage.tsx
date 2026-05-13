@@ -1,7 +1,8 @@
 import { JSX, useState } from 'react';
 
 import { MessageList } from '@/components/chat/MessageList';
-import { PhaseLabel } from '@/components/chat/PhaseLabel';
+import { PhaseBadge } from '@/components/chat/PhaseBadge';
+import { RecommendationPanel } from '@/components/chat/RecommendationPanel';
 import { SeedMessage } from '@/components/chat/SeedMessage';
 import { Button } from '@/components/shadcn/button';
 import { Label } from '@/components/shadcn/label';
@@ -16,11 +17,12 @@ import { useSubmitTurn } from '@/hooks/use-submit-turn';
  * - Phase indicator badge and "Start Over" button in header
  * - Seed input view when sessionId is null
  * - Scrollable message history with auto-scroll to bottom when sessionId is populated
+ * - RecommendationPanel when recommendation object is available
  * - Textarea for message submission with Enter to submit, Shift+Enter for newlines
  * - Submit button with loading state
  */
 export const ChatPage = (): JSX.Element => {
-  const { messages, phase, sessionId, resetSession } = useSession();
+  const { messages, phase, sessionId, recommendation, resetSession } = useSession();
   const { mutate: submitTurn, isPending, error } = useSubmitTurn();
   const [inputValue, setInputValue] = useState('');
 
@@ -60,7 +62,7 @@ export const ChatPage = (): JSX.Element => {
       <div className="border-border flex items-center justify-between border-b px-6 py-4">
         <h1 className="text-foreground text-2xl font-semibold">Career Compass</h1>
         <div className="flex items-center gap-4">
-          <PhaseLabel phase={phase} />
+          <PhaseBadge phase={phase} />
           {sessionId && (
             <Button variant="outline" size="sm" onClick={resetSession} aria-label="Start a new conversation">
               Start Over
@@ -69,9 +71,9 @@ export const ChatPage = (): JSX.Element => {
         </div>
       </div>
 
-      {/* Scrollable message history or seed prompt */}
+      {/* Scrollable message history, seed prompt, and recommendation panel */}
       <ScrollArea className="min-h-0 flex-1 px-6 py-4">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-2xl space-y-6">
           {sessionId === null ? (
             <SeedMessage />
           ) : messages.length === 0 ? (
@@ -79,7 +81,10 @@ export const ChatPage = (): JSX.Element => {
               <p>Start a conversation to receive career guidance.</p>
             </div>
           ) : (
-            <MessageList messages={messages} />
+            <>
+              <MessageList messages={messages} />
+              {recommendation && <RecommendationPanel recommendation={recommendation} />}
+            </>
           )}
         </div>
       </ScrollArea>
