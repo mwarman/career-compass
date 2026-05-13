@@ -16,14 +16,6 @@ import { useSubmitTurn } from '@/hooks/use-submit-turn';
  * - Scrollable message history with auto-scroll to bottom
  * - Input field with accessible label
  * - Submit button with loading state
- *
- * Acceptance Criteria:
- * - AC-01: Message history scrolls; new messages auto-scroll to bottom
- * - AC-02: User and assistant messages are visually distinct
- * - AC-03: Submit button disabled and shows loading state while isPending is true
- * - AC-04: Phase badge updates when phase changes in session context
- * - AC-05: Enter key in the input field triggers submission (in addition to button click)
- * - AC-06: Input clears after successful submission
  */
 export const ChatPage = (): JSX.Element => {
   const { messages, phase } = useSession();
@@ -31,15 +23,15 @@ export const ChatPage = (): JSX.Element => {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // AC-01: Auto-scroll to bottom when new messages arrive
+  /**
+   * Auto-scroll to bottom when messages change.
+   */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   /**
    * Handle form submission.
-   * AC-05: Supports both button click and Enter key
-   * AC-06: Clears input after successful submission
    */
   const handleSubmit = (): void => {
     if (inputValue.trim() === '' || isPending) {
@@ -50,7 +42,6 @@ export const ChatPage = (): JSX.Element => {
       { userMessage: inputValue.trim() },
       {
         onSuccess: () => {
-          // AC-06: Clear input after successful submission
           setInputValue('');
         },
       },
@@ -59,7 +50,6 @@ export const ChatPage = (): JSX.Element => {
 
   /**
    * Handle Enter key press in input field.
-   * AC-05: Enter key triggers submission
    */
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -73,14 +63,12 @@ export const ChatPage = (): JSX.Element => {
       {/* Header with phase indicator */}
       <div className="border-border flex items-center justify-between border-b px-6 py-4">
         <h1 className="text-foreground text-2xl font-semibold">Career Compass</h1>
-        {/* AC-04: Phase badge updates when phase changes */}
         <PhaseLabel phase={phase} />
       </div>
 
-      {/* Scrollable message history - AC-01: Messages scroll and auto-scroll to bottom */}
+      {/* Scrollable message history */}
       <ScrollArea className="flex-1 px-6 py-4">
         <div className="mx-auto max-w-2xl">
-          {/* AC-02: Message history with visual distinction between user and assistant */}
           {messages.length === 0 ? (
             <div className="text-muted-foreground flex h-full items-center justify-center">
               <p>Start a conversation to receive career guidance.</p>
@@ -134,7 +122,6 @@ export const ChatPage = (): JSX.Element => {
                 </p>
               )}
             </div>
-            {/* AC-03: Submit button disabled and shows loading state while isPending is true */}
             <Button
               type="submit"
               disabled={isPending || inputValue.trim() === ''}
