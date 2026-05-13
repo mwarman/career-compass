@@ -28,6 +28,9 @@ const wrapperVariants = cva('flex mb-4', {
   },
 });
 
+/**
+ * Class variance for the message bubble item, controlling styling based on message role.
+ */
 const itemVariants = cva('max-w-4/5 rounded-lg p-4', {
   variants: {
     role: {
