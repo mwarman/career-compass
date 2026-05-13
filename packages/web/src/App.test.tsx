@@ -12,7 +12,8 @@ describe('App', () => {
 
   it('should render the message input field', () => {
     render(<App />);
-    const input = screen.getByPlaceholderText('Type your message...');
+    // Since sessionId is null by default, the seed placeholder is shown
+    const input = screen.getByPlaceholderText(/Describe your current role, experience, skills, and career goals/);
     expect(input).toBeTruthy();
   });
 

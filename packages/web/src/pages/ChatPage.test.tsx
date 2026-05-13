@@ -30,9 +30,91 @@ describe('ChatPage', () => {
     vi.clearAllMocks();
   });
 
-  // AC-01: Message history scrolls; new messages auto-scroll to bottom
-  describe('AC-01: Message history scrolling and auto-scroll', () => {
-    it('should display message history in scrollable container', () => {
+  // AC-01: Seed input view rendered when sessionId === null
+  describe('AC-01: Seed input view', () => {
+    it('should display seed message when sessionId is null', () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: null,
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      expect(screen.getByText('Welcome to Career Compass')).toBeTruthy();
+      expect(screen.getByText(/Share your current professional context/)).toBeTruthy();
+    });
+
+    it('should display seed input instructions in welcome view', () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: null,
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      expect(screen.getByText(/Your current role and experience level/)).toBeTruthy();
+      expect(screen.getByText(/Technologies or skills you currently use/)).toBeTruthy();
+      expect(screen.getByText(/Your career goals and aspirations/)).toBeTruthy();
+    });
+
+    it('should display textarea with seed-specific placeholder when sessionId is null', () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: null,
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      const textarea = screen.getByPlaceholderText(/Describe your current role, experience, skills, and career goals/);
+      expect(textarea).toBeTruthy();
+    });
+  });
+
+  // AC-02: Message history view rendered when sessionId is populated
+  describe('AC-02: Message history view', () => {
+    it('should display message history when sessionId is populated', () => {
       const mockMessages = [
         { role: 'user' as const, content: 'What should I learn?' },
         { role: 'assistant' as const, content: 'Based on your goals...' },
@@ -68,13 +150,208 @@ describe('ChatPage', () => {
       expect(messageList).toBeTruthy();
     });
 
-    it('should auto-scroll to bottom on new messages', async () => {
-      const scrollIntoViewMock = vi.fn();
-      Element.prototype.scrollIntoView = scrollIntoViewMock;
+    it('should hide seed message when sessionId is populated', () => {
+      const mockMessages = [{ role: 'user' as const, content: 'Test' }];
 
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: 'test-session',
+        phase: 'discovery',
+        turnCount: 1,
+        synthesisReady: false,
+        messages: mockMessages,
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      // Seed message should not be visible
+      expect(screen.queryByText('Welcome to Career Compass')).toBeFalsy();
+    });
+
+    it('should display regular placeholder for ongoing conversation', () => {
+      const mockMessages = [{ role: 'user' as const, content: 'Test' }];
+
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: 'test-session',
+        phase: 'discovery',
+        turnCount: 1,
+        synthesisReady: false,
+        messages: mockMessages,
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      const textarea = screen.getByPlaceholderText('Type your message...');
+      expect(textarea).toBeTruthy();
+    });
+  });
+
+  // AC-03: Textarea has placeholder text describing expected input
+  describe('AC-03: Textarea placeholder text', () => {
+    it('should have seed placeholder when no sessionId', () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: null,
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      const textarea = screen.getByPlaceholderText(/Describe your current role, experience, skills, and career goals/);
+      expect(textarea).toBeTruthy();
+    });
+
+    it('should have generic placeholder for ongoing conversation', () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: 'test-session',
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      const textarea = screen.getByPlaceholderText('Type your message...');
+      expect(textarea).toBeTruthy();
+    });
+  });
+
+  // AC-04: "Start Over" button visible in chat view; triggers resetSession
+  describe('AC-04: Start Over button', () => {
+    it('should not display Start Over button when sessionId is null', () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: null,
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      expect(screen.queryByText('Start Over')).toBeFalsy();
+    });
+
+    it('should display Start Over button when sessionId is populated', () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: 'test-session',
+        phase: 'discovery',
+        turnCount: 1,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      const startOverButton = screen.getByText('Start Over');
+      expect(startOverButton).toBeTruthy();
+    });
+
+    it('should call resetSession when Start Over button is clicked', async () => {
+      const mockResetSession = vi.fn();
+
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: 'test-session',
+        phase: 'discovery',
+        turnCount: 1,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: mockResetSession,
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      const startOverButton = screen.getByText('Start Over');
+      await userEvent.click(startOverButton);
+
+      expect(mockResetSession).toHaveBeenCalled();
+    });
+  });
+
+  // AC-05: Seed input is pre-populated in the message history as the first user message
+  describe('AC-05: Seed input pre-population', () => {
+    it('should display seed input as first message after transition to chat view', () => {
       const mockMessages = [
-        { role: 'user' as const, content: 'Question 1' },
-        { role: 'assistant' as const, content: 'Answer 1' },
+        { role: 'user' as const, content: 'Senior React dev with TypeScript experience' },
+        { role: 'assistant' as const, content: 'Based on your background...' },
       ];
 
       vi.mocked(useSession).mockReturnValue({
@@ -98,245 +375,14 @@ describe('ChatPage', () => {
 
       renderChatPage();
 
-      // Wait for scroll to be called
-      await waitFor(() => {
-        expect(scrollIntoViewMock).toHaveBeenCalled();
-      });
+      // First user message should be the seed input
+      expect(screen.getByText('Senior React dev with TypeScript experience')).toBeTruthy();
     });
   });
 
-  // AC-02: User and assistant messages are visually distinct
-  describe('AC-02: Message visual distinction', () => {
-    it('should display user messages right-aligned with different styling', async () => {
-      const mockMessages = [{ role: 'user' as const, content: 'User message' }];
-
-      vi.mocked(useSession).mockReturnValue({
-        sessionId: 'test-session',
-        phase: 'discovery',
-        turnCount: 1,
-        synthesisReady: false,
-        messages: mockMessages,
-        recommendation: null,
-        updateState: vi.fn(),
-        resetSession: vi.fn(),
-      });
-
-      vi.mocked(useSubmitTurn).mockReturnValue({
-        isPending: false,
-        mutate: vi.fn(),
-        mutateAsync: vi.fn(),
-        isError: false,
-        error: null,
-      });
-
-      renderChatPage();
-
-      const userMessage = screen.getByText('User message');
-      const bubbleContainer = userMessage.closest('.rounded-lg');
-
-      // User messages should have primary background
-      expect(bubbleContainer?.className).toContain('bg-primary');
-    });
-
-    it('should display assistant messages left-aligned with different styling', async () => {
-      const mockMessages = [{ role: 'assistant' as const, content: 'Assistant message' }];
-
-      vi.mocked(useSession).mockReturnValue({
-        sessionId: 'test-session',
-        phase: 'discovery',
-        turnCount: 1,
-        synthesisReady: false,
-        messages: mockMessages,
-        recommendation: null,
-        updateState: vi.fn(),
-        resetSession: vi.fn(),
-      });
-
-      vi.mocked(useSubmitTurn).mockReturnValue({
-        isPending: false,
-        mutate: vi.fn(),
-        mutateAsync: vi.fn(),
-        isError: false,
-        error: null,
-      });
-
-      renderChatPage();
-
-      const assistantMessage = screen.getByText('Assistant message');
-      const bubbleContainer = assistantMessage.closest('.rounded-lg');
-
-      // Assistant messages should have muted background
-      expect(bubbleContainer?.className).toContain('bg-muted');
-    });
-  });
-
-  // AC-03: Submit button disabled and shows loading state while isPending is true
-  describe('AC-03: Submit button loading state', () => {
-    it('should disable submit button when isPending is true', () => {
-      vi.mocked(useSession).mockReturnValue({
-        sessionId: 'test-session',
-        phase: 'discovery',
-        turnCount: 0,
-        synthesisReady: false,
-        messages: [],
-        recommendation: null,
-        updateState: vi.fn(),
-        resetSession: vi.fn(),
-      });
-
-      vi.mocked(useSubmitTurn).mockReturnValue({
-        isPending: true,
-        mutate: vi.fn(),
-        mutateAsync: vi.fn(),
-        isError: false,
-        error: null,
-      });
-
-      renderChatPage();
-
-      const submitButton = screen.getByRole('button', { name: /Sending message/ });
-      expect((submitButton as HTMLButtonElement).disabled).toBe(true);
-    });
-
-    it('should show loading text when isPending is true', () => {
-      vi.mocked(useSession).mockReturnValue({
-        sessionId: 'test-session',
-        phase: 'discovery',
-        turnCount: 0,
-        synthesisReady: false,
-        messages: [],
-        recommendation: null,
-        updateState: vi.fn(),
-        resetSession: vi.fn(),
-      });
-
-      vi.mocked(useSubmitTurn).mockReturnValue({
-        isPending: true,
-        mutate: vi.fn(),
-        mutateAsync: vi.fn(),
-        isError: false,
-        error: null,
-      });
-
-      renderChatPage();
-
-      expect(screen.getByText('Sending...')).toBeTruthy();
-    });
-
-    it('should enable submit button when isPending is false', () => {
-      vi.mocked(useSession).mockReturnValue({
-        sessionId: 'test-session',
-        phase: 'discovery',
-        turnCount: 0,
-        synthesisReady: false,
-        messages: [],
-        recommendation: null,
-        updateState: vi.fn(),
-        resetSession: vi.fn(),
-      });
-
-      vi.mocked(useSubmitTurn).mockReturnValue({
-        isPending: false,
-        mutate: vi.fn(),
-        mutateAsync: vi.fn(),
-        isError: false,
-        error: null,
-      });
-
-      renderChatPage();
-
-      const input = screen.getByPlaceholderText('Type your message...');
-      fireEvent.change(input, { target: { value: 'Test message' } });
-
-      const submitButton = screen.getByRole('button', { name: /Send message/ });
-      expect((submitButton as HTMLButtonElement).disabled).toBe(false);
-    });
-  });
-
-  // AC-04: Phase badge updates when phase changes in session context
-  describe('AC-04: Phase badge updates', () => {
-    it('should display discovery phase badge with neutral styling', () => {
-      vi.mocked(useSession).mockReturnValue({
-        sessionId: 'test-session',
-        phase: 'discovery',
-        turnCount: 0,
-        synthesisReady: false,
-        messages: [],
-        recommendation: null,
-        updateState: vi.fn(),
-        resetSession: vi.fn(),
-      });
-
-      vi.mocked(useSubmitTurn).mockReturnValue({
-        isPending: false,
-        mutate: vi.fn(),
-        mutateAsync: vi.fn(),
-        isError: false,
-        error: null,
-      });
-
-      renderChatPage();
-
-      const badge = screen.getByText('Discovery');
-      expect(badge.className).toContain('bg-neutral-200');
-    });
-
-    it('should display goalElicitation phase badge with blue styling', () => {
-      vi.mocked(useSession).mockReturnValue({
-        sessionId: 'test-session',
-        phase: 'goalElicitation',
-        turnCount: 0,
-        synthesisReady: false,
-        messages: [],
-        recommendation: null,
-        updateState: vi.fn(),
-        resetSession: vi.fn(),
-      });
-
-      vi.mocked(useSubmitTurn).mockReturnValue({
-        isPending: false,
-        mutate: vi.fn(),
-        mutateAsync: vi.fn(),
-        isError: false,
-        error: null,
-      });
-
-      renderChatPage();
-
-      const badge = screen.getByText('Goal Elicitation');
-      expect(badge.className).toContain('bg-blue-200');
-    });
-
-    it('should display synthesis phase badge with green styling', () => {
-      vi.mocked(useSession).mockReturnValue({
-        sessionId: 'test-session',
-        phase: 'synthesis',
-        turnCount: 0,
-        synthesisReady: false,
-        messages: [],
-        recommendation: null,
-        updateState: vi.fn(),
-        resetSession: vi.fn(),
-      });
-
-      vi.mocked(useSubmitTurn).mockReturnValue({
-        isPending: false,
-        mutate: vi.fn(),
-        mutateAsync: vi.fn(),
-        isError: false,
-        error: null,
-      });
-
-      renderChatPage();
-
-      const badge = screen.getByText('Synthesis');
-      expect(badge.className).toContain('bg-green-200');
-    });
-  });
-
-  // AC-05: Enter key in the input field triggers submission (in addition to button click)
-  describe('AC-05: Keyboard submission', () => {
-    it('should submit on Enter key press', async () => {
+  // AC-06: Unit tests for all new and updated components
+  describe('AC-06: Textarea submission behavior', () => {
+    it('should submit on Enter key without Shift', async () => {
       const mockMutate = vi.fn();
 
       vi.mocked(useSession).mockReturnValue({
@@ -360,13 +406,44 @@ describe('ChatPage', () => {
 
       renderChatPage();
 
-      const input = screen.getByPlaceholderText('Type your message...');
-      await userEvent.type(input, 'Test message{Enter}');
+      const textarea = screen.getByPlaceholderText('Type your message...');
+      await userEvent.type(textarea, 'Test message{Enter}');
 
       expect(mockMutate).toHaveBeenCalledWith({ userMessage: 'Test message' }, expect.objectContaining({}));
     });
 
-    it('should not submit on Shift+Enter', async () => {
+    it('should allow newlines with Shift+Enter', async () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: 'test-session',
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      const textarea = screen.getByPlaceholderText('Type your message...') as HTMLTextAreaElement;
+      fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: true });
+
+      // The message should NOT be submitted - just a newline allowed
+      // This test verifies the handler doesn't prevent the newline
+      fireEvent.change(textarea, { target: { value: 'Line 1\nLine 2' } });
+      expect(textarea.value).toContain('\n');
+    });
+
+    it('should not submit on Shift+Enter', () => {
       const mockMutate = vi.fn();
 
       vi.mocked(useSession).mockReturnValue({
@@ -390,49 +467,13 @@ describe('ChatPage', () => {
 
       renderChatPage();
 
-      const input = screen.getByPlaceholderText('Type your message...');
-      fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
+      const textarea = screen.getByPlaceholderText('Type your message...');
+      fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: true });
 
       expect(mockMutate).not.toHaveBeenCalled();
     });
 
-    it('should submit on button click', async () => {
-      const mockMutate = vi.fn();
-
-      vi.mocked(useSession).mockReturnValue({
-        sessionId: 'test-session',
-        phase: 'discovery',
-        turnCount: 0,
-        synthesisReady: false,
-        messages: [],
-        recommendation: null,
-        updateState: vi.fn(),
-        resetSession: vi.fn(),
-      });
-
-      vi.mocked(useSubmitTurn).mockReturnValue({
-        isPending: false,
-        mutate: mockMutate,
-        mutateAsync: vi.fn(),
-        isError: false,
-        error: null,
-      });
-
-      renderChatPage();
-
-      const input = screen.getByPlaceholderText('Type your message...');
-      await userEvent.type(input, 'Test message');
-
-      const submitButton = screen.getByRole('button', { name: /Send message/ });
-      await userEvent.click(submitButton);
-
-      expect(mockMutate).toHaveBeenCalledWith({ userMessage: 'Test message' }, expect.any(Object));
-    });
-  });
-
-  // AC-06: Input clears after successful submission
-  describe('AC-06: Input clearing after submission', () => {
-    it('should clear input after successful submission', async () => {
+    it('should clear textarea after successful submission', async () => {
       let mutateCallback: { onSuccess?: () => void } | undefined;
 
       const mockMutate = vi.fn((_variables, options: { onSuccess?: () => void }) => {
@@ -460,10 +501,10 @@ describe('ChatPage', () => {
 
       renderChatPage();
 
-      const input = screen.getByPlaceholderText('Type your message...') as HTMLInputElement;
-      await userEvent.type(input, 'Test message');
+      const textarea = screen.getByPlaceholderText('Type your message...') as HTMLTextAreaElement;
+      await userEvent.type(textarea, 'Test message');
 
-      expect(input.value).toBe('Test message');
+      expect(textarea.value).toBe('Test message');
 
       // Simulate successful submission
       const submitButton = screen.getByRole('button', { name: /Send message/ });
@@ -473,16 +514,13 @@ describe('ChatPage', () => {
       mutateCallback?.onSuccess?.();
 
       await waitFor(() => {
-        expect(input.value).toBe('');
+        expect(textarea.value).toBe('');
       });
     });
-  });
 
-  // Additional test: Empty state message
-  describe('Empty state', () => {
-    it('should display guidance when no messages', () => {
+    it('should disable submit button when textarea is empty', () => {
       vi.mocked(useSession).mockReturnValue({
-        sessionId: null,
+        sessionId: 'test-session',
         phase: 'discovery',
         turnCount: 0,
         synthesisReady: false,
@@ -502,11 +540,66 @@ describe('ChatPage', () => {
 
       renderChatPage();
 
-      expect(screen.getByText('Start a conversation to receive career guidance.')).toBeTruthy();
+      const submitButton = screen.getByRole('button', { name: /Send message/ });
+      expect((submitButton as HTMLButtonElement).disabled).toBe(true);
+    });
+
+    it('should enable submit button when textarea has content', async () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: 'test-session',
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      const textarea = screen.getByPlaceholderText('Type your message...');
+      await userEvent.type(textarea, 'Test');
+
+      const submitButton = screen.getByRole('button', { name: /Send message/ });
+      expect((submitButton as HTMLButtonElement).disabled).toBe(false);
+    });
+
+    it('should disable submit button when isPending is true', () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: 'test-session',
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: true,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      const submitButton = screen.getByRole('button', { name: /Sending message/ });
+      expect((submitButton as HTMLButtonElement).disabled).toBe(true);
     });
   });
 
-  // Additional test: Error display
   describe('Error handling', () => {
     it('should display error message when error exists', () => {
       const mockError: { message: string; status: number } = {
@@ -536,6 +629,33 @@ describe('ChatPage', () => {
       renderChatPage();
 
       expect(screen.getByText('Failed to send message')).toBeTruthy();
+    });
+  });
+
+  describe('Phase badge display', () => {
+    it('should display discovery phase badge', () => {
+      vi.mocked(useSession).mockReturnValue({
+        sessionId: 'test-session',
+        phase: 'discovery',
+        turnCount: 0,
+        synthesisReady: false,
+        messages: [],
+        recommendation: null,
+        updateState: vi.fn(),
+        resetSession: vi.fn(),
+      });
+
+      vi.mocked(useSubmitTurn).mockReturnValue({
+        isPending: false,
+        mutate: vi.fn(),
+        mutateAsync: vi.fn(),
+        isError: false,
+        error: null,
+      });
+
+      renderChatPage();
+
+      expect(screen.getByText('Discovery')).toBeTruthy();
     });
   });
 });

@@ -1,34 +1,28 @@
-import { JSX, useEffect, useRef, useState } from 'react';
+import { JSX, useState } from 'react';
 
-import { MessageBubble } from '@/components/chat/MessageBubble';
+import { MessageList } from '@/components/chat/MessageList';
 import { PhaseLabel } from '@/components/chat/PhaseLabel';
+import { SeedMessage } from '@/components/chat/SeedMessage';
 import { Button } from '@/components/shadcn/button';
-import { Input } from '@/components/shadcn/input';
 import { Label } from '@/components/shadcn/label';
 import { ScrollArea } from '@/components/shadcn/scroll-area';
+import { Textarea } from '@/components/shadcn/textarea';
 import { useSession } from '@/context/session-context';
 import { useSubmitTurn } from '@/hooks/use-submit-turn';
 
 /**
  * ChatPage component - main conversational UI for Career Compass.
  * Displays:
- * - Phase indicator badge in header
- * - Scrollable message history with auto-scroll to bottom
- * - Input field with accessible label
+ * - Phase indicator badge and "Start Over" button in header
+ * - Seed input view when sessionId is null
+ * - Scrollable message history with auto-scroll to bottom when sessionId is populated
+ * - Textarea for message submission with Enter to submit, Shift+Enter for newlines
  * - Submit button with loading state
  */
 export const ChatPage = (): JSX.Element => {
-  const { messages, phase } = useSession();
+  const { messages, phase, sessionId, resetSession } = useSession();
   const { mutate: submitTurn, isPending, error } = useSubmitTurn();
   const [inputValue, setInputValue] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  /**
-   * Auto-scroll to bottom when messages change.
-   */
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   /**
    * Handle form submission.
@@ -49,9 +43,11 @@ export const ChatPage = (): JSX.Element => {
   };
 
   /**
-   * Handle Enter key press in input field.
+   * Handle Enter key press in textarea field.
+   * - Enter alone: submit message
+   * - Shift+Enter: insert newline
    */
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleSubmit();
@@ -60,30 +56,30 @@ export const ChatPage = (): JSX.Element => {
 
   return (
     <div className="bg-background flex h-screen flex-col">
-      {/* Header with phase indicator */}
+      {/* Header with phase indicator and start over button */}
       <div className="border-border flex items-center justify-between border-b px-6 py-4">
         <h1 className="text-foreground text-2xl font-semibold">Career Compass</h1>
-        <PhaseLabel phase={phase} />
+        <div className="flex items-center gap-4">
+          <PhaseLabel phase={phase} />
+          {sessionId && (
+            <Button variant="outline" size="sm" onClick={resetSession} aria-label="Start a new conversation">
+              Start Over
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Scrollable message history */}
-      <ScrollArea className="flex-1 px-6 py-4">
+      {/* Scrollable message history or seed prompt */}
+      <ScrollArea className="min-h-0 flex-1 px-6 py-4">
         <div className="mx-auto max-w-2xl">
-          {messages.length === 0 ? (
+          {sessionId === null ? (
+            <SeedMessage />
+          ) : messages.length === 0 ? (
             <div className="text-muted-foreground flex h-full items-center justify-center">
               <p>Start a conversation to receive career guidance.</p>
             </div>
           ) : (
-            <>
-              {/* Message list with ARIA role for accessibility */}
-              <div role="log" aria-label="Conversation messages" className="space-y-2">
-                {messages.map((message, index) => (
-                  <MessageBubble key={index} role={message.role} content={message.content} />
-                ))}
-              </div>
-              {/* Anchor for auto-scroll to bottom */}
-              <div ref={messagesEndRef} />
-            </>
+            <MessageList messages={messages} />
           )}
         </div>
       </ScrollArea>
@@ -100,14 +96,17 @@ export const ChatPage = (): JSX.Element => {
             autoComplete="off"
           >
             <div className="flex flex-1 flex-col">
-              {/* Accessible label for input field */}
+              {/* Accessible label for textarea field */}
               <Label htmlFor="message-input" className="sr-only">
                 Message input
               </Label>
-              <Input
+              <Textarea
                 id="message-input"
-                type="text"
-                placeholder="Type your message..."
+                placeholder={
+                  sessionId === null
+                    ? 'Describe your current role, experience, skills, and career goals...'
+                    : 'Type your message...'
+                }
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
