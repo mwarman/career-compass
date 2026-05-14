@@ -1,6 +1,7 @@
 import { cva } from 'class-variance-authority';
 import { JSX } from 'react';
 
+import { Markdown } from '@/components/common/Markdown';
 import { Item } from '@/components/shadcn/item';
 
 /**
@@ -58,7 +59,7 @@ export const MessageBubble = ({ role, content }: MessageBubbleProps): JSX.Elemen
   return (
     <div className={wrapperVariants({ role })}>
       <Item variant={isUser ? 'outline' : 'muted'} className={itemVariants({ role })}>
-        <p className="text-sm leading-relaxed">{content}</p>
+        <Markdown className="text-sm leading-relaxed">{content}</Markdown>
       </Item>
     </div>
   );
