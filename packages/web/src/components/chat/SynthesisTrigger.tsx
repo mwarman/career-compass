@@ -36,12 +36,12 @@ export interface SynthesisTriggerProps {
  * SynthesisTrigger component - button to explicitly trigger synthesis recommendations.
  *
  * Display conditions:
- * - Visible when turnCount >= MIN_TURNS_FOR_SYNTHESIS (AC-01)
- * - Hidden when phase === 'synthesis' or hasRecommendation === true (AC-03)
- * - Pulses when synthesisReady === true to prompt user action (AC-05)
+ * - Visible when turnCount >= MIN_TURNS_FOR_SYNTHESIS
+ * - Hidden when phase === 'synthesis' or hasRecommendation === true
+ * - Pulses when synthesisReady === true to prompt user action
  *
  * Clicking the button calls onTrigger, which submits SYNTHESIS_TRIGGER_PHRASE
- * via useSubmitTurn (AC-02), same path as manual message submission.
+ * via useSubmitTurn, same path as manual message submission.
  *
  * @param props - Component props
  * @returns Rendered trigger button or null if conditions not met
@@ -54,12 +54,12 @@ export const SynthesisTrigger = ({
   onTrigger,
   isSubmitting,
 }: SynthesisTriggerProps): JSX.Element | null => {
-  // AC-03: Hide if synthesis is complete or in progress
+  // Hide if synthesis is complete or in progress
   if (phase === 'synthesis' || hasRecommendation) {
     return null;
   }
 
-  // AC-01: Only show if minimum turns have passed
+  // Only show if minimum turns have passed
   if (turnCount < MIN_TURNS_FOR_SYNTHESIS) {
     return null;
   }

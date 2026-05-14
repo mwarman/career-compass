@@ -22,7 +22,7 @@ import { SYNTHESIS_TRIGGER_PHRASE } from '@/utils/constants';
  * - Scrollable message history with auto-scroll to bottom when sessionId is populated
  * - RecommendationPanel when recommendation object is available
  * - Textarea for message submission with Enter to submit, Shift+Enter for newlines
- * - Synthesis trigger button to explicitly request recommendations (AC-01 through AC-05)
+ * - Synthesis trigger button to explicitly request recommendations
  * - Submit button with loading state
  */
 export const ChatPage = (): JSX.Element => {
@@ -49,7 +49,7 @@ export const ChatPage = (): JSX.Element => {
   };
 
   /**
-   * Handle synthesis trigger button click (AC-02).
+   * Handle synthesis trigger button click.
    * Submits the SYNTHESIS_TRIGGER_PHRASE as the user message, same as manual typing.
    */
   const handleTriggerSynthesis = (): void => {
