@@ -1,0 +1,64 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build the app
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: deploy-career-compass-${{ github.run_id }}
+
+      - name: Synthesize CDK stacks
+        run: npm run synth -w infra
+
+      - name: Deploy backend stack
+        run: npm run cdk deploy -w infra -- CareerCompassApiStack --require-approval never
+
+      - name: Retrieve API Gateway URL
+        id: get-api-url
+        run: |
+          API_URL=$(aws cloudformation describe-stacks --stack-name CareerCompassApiStack --query "Stacks[0].Outputs[?OutputKey=='ConversationApiUrlOutput'].OutputValue" --output text)
+          echo "API_URL=$API_URL" >> $GITHUB_ENV
+
+      - name: Update frontend environment variables
+        run: |
+          echo "VITE_API_BASE_URL=$API_URL" >> packages/web/.env
+
+      - name: Build frontend
+        run: npm run build -w packages/web
+
+      - name: Deploy frontend stack
+        run: npm run cdk deploy -w infra -- CareerCompassFrontendStack --require-approval never
