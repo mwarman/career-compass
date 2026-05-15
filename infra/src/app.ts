@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 
 import { ApiStack } from './stacks/api-stack.js';
 import { FrontendStack } from './stacks/frontend-stack.js';
+import { ObservabilityStack } from './stacks/observability-stack.js';
 import { StorageStack } from './stacks/storage-stack.js';
 
 // Define common tags for all resources in the application
@@ -41,5 +42,19 @@ const frontendStack = new FrontendStack(app, 'CareerCompassFrontendStack', {
   tags,
 });
 
+// M10: Observability Stack - CloudWatch dashboards for monitoring and observability
+const observabilityStack = new ObservabilityStack(app, 'CareerCompassObservabilityStack', {
+  stackName: 'CareerCompassObservabilityStack',
+  description: 'Observability resources for Career Compass',
+  conversationFunction: apiStack.conversationFunction,
+  api: apiStack.api,
+  sessionTable: storageStack.sessionTable,
+  tags,
+});
+
+// Add dependencies to ensure observability stack deploys after all other stacks
+observabilityStack.addDependency(storageStack);
+observabilityStack.addDependency(apiStack);
+
 // Export the stacks so they can be referenced externally if needed
-export { storageStack, apiStack, frontendStack };
+export { storageStack, apiStack, frontendStack, observabilityStack };

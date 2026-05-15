@@ -62,3 +62,6 @@ jobs:
 
       - name: Deploy frontend stack
         run: npm run cdk deploy -w infra -- CareerCompassFrontendStack --require-approval never
+
+      - name: Deploy observability stack
+        run: npm run cdk deploy -w infra -- CareerCompassObservabilityStack --require-approval never
