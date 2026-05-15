@@ -8,7 +8,7 @@ import { JSX } from 'react';
  * @param param0.className - Optional CSS class for styling
  * @returns JSX element containing rendered Markdown
  */
-export const Markdown = ({ children, className }: React.ComponentPropsWithoutRef<'div'>): JSX.Element => {
+export const Markdown = ({ children, className }: React.ComponentProps<'div'>): JSX.Element => {
   return (
     <div className={className}>
       <MarkdownToJsx>{children}</MarkdownToJsx>
