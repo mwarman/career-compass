@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 
 import { ApiStack } from './stacks/api-stack.js';
+import { FrontendStack } from './stacks/frontend-stack.js';
 import { StorageStack } from './stacks/storage-stack.js';
 
 // Define common tags for all resources in the application
@@ -33,5 +34,12 @@ const apiStack = new ApiStack(app, 'CareerCompassApiStack', {
 // Add explicit dependency to ensure StorageStack is deployed first
 apiStack.addDependency(storageStack);
 
+// M9: Frontend Stack - S3 bucket and CloudFront distribution for React SPA
+const frontendStack = new FrontendStack(app, 'CareerCompassFrontendStack', {
+  stackName: 'CareerCompassFrontendStack',
+  description: 'Frontend resources for Career Compass',
+  tags,
+});
+
 // Export the stacks so they can be referenced externally if needed
-export { storageStack, apiStack };
+export { storageStack, apiStack, frontendStack };
