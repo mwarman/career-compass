@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/shadcn/dropdown-menu';
-import { useTheme } from '@/context/ThemeProvider';
+import { useTheme } from '@/context/ThemeContext';
 
 /**
  * ThemeToggle component - dropdown menu to select dark/light/system theme.

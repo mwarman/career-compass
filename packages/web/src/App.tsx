@@ -2,7 +2,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { JSX } from 'react';
 
 import { SessionProvider } from '@/context/SessionContext';
-import { ThemeProvider } from '@/context/ThemeProvider';
+import { ThemeProvider } from '@/context/ThemeContext';
 import { ChatPage } from '@/pages/ChatPage';
 import { queryClient } from '@/utils/query-client';
 

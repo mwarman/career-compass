@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, beforeEach } from 'vitest';
 
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { ThemeProvider } from '@/context/ThemeProvider';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 describe('ThemeToggle', () => {
   beforeEach(() => {
