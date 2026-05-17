@@ -10,6 +10,7 @@ import { Button } from '@/components/shadcn/button';
 import { Label } from '@/components/shadcn/label';
 import { ScrollArea } from '@/components/shadcn/scroll-area';
 import { Textarea } from '@/components/shadcn/textarea';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useSession } from '@/context/session-context';
 import { useSubmitTurn } from '@/hooks/use-submit-turn';
 import { SYNTHESIS_TRIGGER_PHRASE } from '@/utils/constants';
@@ -92,6 +93,7 @@ export const ChatPage = (): JSX.Element => {
               Start Over
             </Button>
           )}
+          <ThemeToggle />
         </div>
       </div>
 
