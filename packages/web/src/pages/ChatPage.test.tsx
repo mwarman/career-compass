@@ -6,11 +6,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChatPage } from './ChatPage';
 
 import { useSession } from '@/context/SessionContext';
-import { useSubmitTurn } from '@/hooks/use-submit-turn';
+import { useSubmitTurn } from '@/hooks/useSubmitTurn';
 import { queryClient } from '@/utils/query-client';
 
 // Mock the hooks
-vi.mock('@/hooks/use-submit-turn');
+vi.mock('@/hooks/useSubmitTurn');
 vi.mock('@/context/SessionContext');
 
 /**
