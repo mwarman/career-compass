@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { SessionProvider, useSession } from './session-context';
+import { SessionProvider, useSession } from './SessionContext';
 
 const wrapper = ({ children }: { children: ReactNode }) => <SessionProvider>{children}</SessionProvider>;
 

@@ -1,7 +1,7 @@
 import { JSX, useEffect, useRef } from 'react';
 
 import { MessageBubble } from '@/components/chat/MessageBubble';
-import { Message } from '@/context/session-context';
+import { Message } from '@/context/SessionContext';
 
 /**
  * Props for the MessageList component.

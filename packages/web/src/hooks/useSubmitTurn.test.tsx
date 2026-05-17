@@ -14,11 +14,11 @@ vi.mock('@/utils/config', () => ({
 
 // Mock dependencies
 vi.mock('@/utils/api-client');
-vi.mock('@/context/session-context');
+vi.mock('@/context/SessionContext');
 
-import { useSubmitTurn } from '../use-submit-turn';
+import { useSubmitTurn } from './useSubmitTurn';
 
-import { useSession } from '@/context/session-context';
+import { useSession } from '@/context/SessionContext';
 import { apiClient } from '@/utils/api-client';
 
 // Create a test wrapper with QueryClientProvider

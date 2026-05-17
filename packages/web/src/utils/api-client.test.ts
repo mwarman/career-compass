@@ -8,7 +8,7 @@ vi.mock('../config', () => ({
   },
 }));
 
-import { isAPIError } from '../api-client';
+import { isAPIError } from './api-client';
 
 describe('api-client', () => {
   beforeEach(() => {

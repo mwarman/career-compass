@@ -1,7 +1,7 @@
 import { TurnResponseSchema } from '@career-compass/shared';
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
 
-import { useSession } from '@/context/session-context';
+import { useSession } from '@/context/SessionContext';
 import { apiClient, APIError, isAPIError } from '@/utils/api-client';
 
 /**
