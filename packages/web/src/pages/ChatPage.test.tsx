@@ -5,13 +5,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ChatPage } from './ChatPage';
 
-import { useSession } from '@/context/session-context';
+import { useSession } from '@/context/SessionContext';
 import { useSubmitTurn } from '@/hooks/use-submit-turn';
 import { queryClient } from '@/utils/query-client';
 
 // Mock the hooks
 vi.mock('@/hooks/use-submit-turn');
-vi.mock('@/context/session-context');
+vi.mock('@/context/SessionContext');
 
 /**
  * Render helper for ChatPage with required providers.

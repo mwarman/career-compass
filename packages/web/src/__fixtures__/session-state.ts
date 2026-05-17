@@ -1,7 +1,7 @@
 /**
  * Fixtures for different session states to facilitate testing and development.
  */
-import { ClientSessionState } from '@/context/session-context';
+import { ClientSessionState } from '@/context/SessionContext';
 
 /**
  * Fixture for a session in the discovery phase with 1 turns completed and no synthesis ready.
