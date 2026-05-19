@@ -9,7 +9,21 @@ describe('ThemeProvider', () => {
     document.documentElement.className = '';
   });
 
-  it('AC-01: should display system preferred mode if available', async () => {
+  it('AC-04: should read theme from localStorage first', async () => {
+    localStorage.setItem('career-compass-theme', 'light');
+
+    render(
+      <ThemeProvider>
+        <div>Test</div>
+      </ThemeProvider>,
+    );
+
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains('light')).toBe(true);
+    });
+  });
+
+  it('AC-04: should fall back to system preference when localStorage is empty', async () => {
     const mockMatchMedia = vi.fn((query: string) => ({
       matches: query === '(prefers-color-scheme: dark)',
       media: query,
@@ -23,7 +37,7 @@ describe('ThemeProvider', () => {
     window.matchMedia = mockMatchMedia;
 
     render(
-      <ThemeProvider defaultTheme="system">
+      <ThemeProvider>
         <div>Test</div>
       </ThemeProvider>,
     );

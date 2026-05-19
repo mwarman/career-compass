@@ -1,6 +1,6 @@
 import { createContext, JSX, ReactNode, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = 'dark' | 'light';
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -14,7 +14,7 @@ interface ThemeProviderState {
 }
 
 const initialState: ThemeProviderState = {
-  theme: 'system',
+  theme: 'dark',
   setTheme: () => null,
 };
 
@@ -22,9 +22,9 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 /**
  * ThemeProvider component - manages dark/light theme state and applies it to the document.
- * Detects system preference via prefers-color-scheme media query.
+ * Loads theme from localStorage first, then detects system preference via prefers-color-scheme media query,
+ * and falls back to 'dark' as the final default.
  * Persists user preference to localStorage.
- * Defaults to 'dark' mode as per application requirements.
  */
 export const ThemeProvider = ({
   children,
@@ -32,19 +32,29 @@ export const ThemeProvider = ({
   storageKey = 'career-compass-theme',
   ...props
 }: ThemeProviderProps): JSX.Element => {
-  const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem(storageKey) as Theme) || defaultTheme);
+  const [theme, setThemeState] = useState<Theme>(() => {
+    // Priority 1: Check localStorage
+    const stored = localStorage.getItem(storageKey) as Theme | null;
+    if (stored && (stored === 'dark' || stored === 'light')) {
+      return stored;
+    }
+
+    // Priority 2: Check system preference
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+      return 'light';
+    }
+
+    // Priority 3: Default to provided defaultTheme or 'dark'
+    return defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
-
     root.classList.remove('light', 'dark');
-
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(theme);
-    }
+    root.classList.add(theme);
   }, [theme]);
 
   const value = {
