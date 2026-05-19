@@ -1,5 +1,6 @@
 import { JSX, useState } from 'react';
 
+import { About } from '@/components/about/About';
 import { MessageList } from '@/components/chat/MessageList';
 import { PhaseBadge } from '@/components/chat/PhaseBadge';
 import { RecommendationPanel } from '@/components/chat/RecommendationPanel';
@@ -93,6 +94,7 @@ export const ChatPage = (): JSX.Element => {
               Start Over
             </Button>
           )}
+          <About />
           <ThemeToggle />
         </div>
       </div>
