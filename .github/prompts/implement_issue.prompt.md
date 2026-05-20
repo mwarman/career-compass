@@ -33,5 +33,5 @@ Issue to implement: ${input:issueNumber:Enter the issue number to implement.}
 **You are done when:**
 
 - All code changes include unit tests that cover the new functionality and edge cases.
-- Project documentation is updated to reflect the changes made such as updating the README, adding useful comments to the code, and updating any relevant documentation files in `/docs`.
+- Project documentation is updated to reflect the changes made such as updating the README, adding useful comments to the code, and updating any relevant documentation files in `/docs`. Do not invent documentation updates that are not supported by the code changes you made.
 - The project lints, builds, and passes all tests successfully.
