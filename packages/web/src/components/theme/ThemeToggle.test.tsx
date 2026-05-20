@@ -22,21 +22,7 @@ describe('ThemeToggle', () => {
     expect(button).toBeDefined();
   });
 
-  it('should display sun and moon icons', () => {
-    render(
-      <ThemeProvider>
-        <ThemeToggle />
-      </ThemeProvider>,
-    );
-
-    const button = screen.getByRole('button', { name: /toggle theme/i });
-    const svgs = button.querySelectorAll('svg');
-    expect(svgs.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('AC-03: should open dropdown menu when clicked', async () => {
-    const user = userEvent.setup();
-
+  it('AC-03: should display sun icon when in dark mode', () => {
     render(
       <ThemeProvider defaultTheme="dark">
         <ThemeToggle />
@@ -44,19 +30,25 @@ describe('ThemeToggle', () => {
     );
 
     const button = screen.getByRole('button', { name: /toggle theme/i });
-
-    // Open dropdown
-    await user.click(button);
-
-    // Check that menu items are available
-    await waitFor(() => {
-      expect(screen.getByRole('menuitem', { name: /light/i })).toBeDefined();
-      expect(screen.getByRole('menuitem', { name: /dark/i })).toBeDefined();
-      expect(screen.getByRole('menuitem', { name: /system/i })).toBeDefined();
-    });
+    const svgs = button.querySelectorAll('svg');
+    // Should have exactly one icon (sun) since we're showing what theme will be
+    expect(svgs.length).toBe(1);
   });
 
-  it('should allow theme selection from dropdown', async () => {
+  it('AC-03: should display moon icon when in light mode', () => {
+    render(
+      <ThemeProvider defaultTheme="light">
+        <ThemeToggle />
+      </ThemeProvider>,
+    );
+
+    const button = screen.getByRole('button', { name: /toggle theme/i });
+    const svgs = button.querySelectorAll('svg');
+    // Should have exactly one icon (moon) since we're showing what theme will be
+    expect(svgs.length).toBe(1);
+  });
+
+  it('AC-03: should toggle theme from dark to light when clicked', async () => {
     const user = userEvent.setup();
 
     render(
@@ -67,16 +59,34 @@ describe('ThemeToggle', () => {
 
     const button = screen.getByRole('button', { name: /toggle theme/i });
 
-    // Open dropdown and select light mode
+    // Click to toggle from dark to light
     await user.click(button);
-
-    const lightOption = await screen.findByRole('menuitem', { name: /light/i });
-    await user.click(lightOption);
 
     // Verify theme changed
     await waitFor(() => {
       expect(document.documentElement.classList.contains('light')).toBe(true);
       expect(localStorage.getItem('test-theme')).toBe('light');
+    });
+  });
+
+  it('AC-03: should toggle theme from light to dark when clicked', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ThemeProvider defaultTheme="light" storageKey="test-theme">
+        <ThemeToggle />
+      </ThemeProvider>,
+    );
+
+    const button = screen.getByRole('button', { name: /toggle theme/i });
+
+    // Click to toggle from light to dark
+    await user.click(button);
+
+    // Verify theme changed
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+      expect(localStorage.getItem('test-theme')).toBe('dark');
     });
   });
 });
