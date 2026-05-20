@@ -8,7 +8,7 @@ import { Badge } from '@/components/shadcn/badge';
  * PhaseBadge component renders the conversation phase indicator as a shadcn Badge.
  * Uses badge variants to visually distinguish different phases.
  */
-const phaseBadgeVariants = cva('', {
+const phaseBadgeVariants = cva('mx-2', {
   variants: {
     phase: {
       discovery:
