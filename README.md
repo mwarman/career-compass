@@ -167,9 +167,6 @@ cd packages/web
 npm run dev
 ```
 
-**Backend (local testing):**
-TBD - Details coming soon.
-
 ---
 
 ## Deployment
@@ -192,8 +189,6 @@ cd infra
 npm run deploy
 ```
 
-**TBD - Detailed deployment instructions coming soon.**
-
 ### CI/CD
 
 GitHub Actions workflows:
@@ -201,8 +196,6 @@ GitHub Actions workflows:
 - **CI**: Linting, type checking, tests on every push to main
 - **Deploy**: Infrastructure + frontend deployment on merge to main
 - **Teardown**: Destroy all AWS resources (manual trigger)
-
-**TBD - CI/CD configuration details coming soon.**
 
 ---
 
@@ -223,6 +216,37 @@ GitHub Actions workflows:
 - Billing alerts configured from day one
 
 **TBD - Cost projections and budget breakdown coming soon.**
+
+---
+
+## Testing
+
+### Test Coverage
+
+The project maintains comprehensive unit test coverage across all packages.
+
+**Run all tests:**
+
+```bash
+npm run test --workspaces
+```
+
+**Run tests with coverage:**
+
+```bash
+npm run test:coverage -w packages/web
+```
+
+### Frontend Component Testing
+
+The React components are thoroughly tested using Vitest and React Testing Library:
+
+All component tests follow the AAA pattern (Arrange, Act, Assert) and include:
+
+- Accessibility attribute validation
+- User interaction testing
+- Error condition handling
+- Edge case coverage
 
 ---
 
