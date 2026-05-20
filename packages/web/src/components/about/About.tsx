@@ -17,7 +17,7 @@ export const About = (): JSX.Element => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" aria-label="About this project" title="About this project">
           <Info className="h-[1.2rem] w-[1.2rem]" />
           <span className="sr-only">About this project</span>
         </Button>
