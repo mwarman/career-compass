@@ -17,7 +17,7 @@ export const ThemeToggle = (): JSX.Element => {
   };
 
   return (
-    <Button variant="ghost" size="icon" onClick={handleToggle} aria-label="Toggle theme">
+    <Button variant="ghost" size="icon" onClick={handleToggle} aria-label="Toggle theme" title="Toggle theme">
       {theme === 'dark' ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : <Moon className="h-[1.2rem] w-[1.2rem]" />}
       <span className="sr-only">Toggle to {theme === 'dark' ? 'light' : 'dark'} mode</span>
     </Button>

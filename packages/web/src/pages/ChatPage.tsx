@@ -1,3 +1,4 @@
+import { ArrowLeftFromLine } from 'lucide-react';
 import { JSX, useState } from 'react';
 
 import { About } from '@/components/about/About';
@@ -86,12 +87,19 @@ export const ChatPage = (): JSX.Element => {
       {/* Header with phase indicator, turn counter, and start over button */}
       <div className="border-border flex items-center justify-between border-b px-6 py-4">
         <h1 className="text-foreground text-2xl font-semibold">Career Compass</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <PhaseBadge phase={phase} />
           {sessionId && <TurnCounter turnCount={turnCount} />}
           {sessionId && (
-            <Button variant="outline" size="sm" onClick={resetSession} aria-label="Start a new conversation">
-              Start Over
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetSession}
+              aria-label="Start a new conversation"
+              title="Start a new conversation"
+            >
+              <ArrowLeftFromLine className="h-[1.2rem] w-[1.2rem]" />
+              <span className="sr-only">Start Over</span>
             </Button>
           )}
           <About />
