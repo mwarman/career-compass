@@ -85,8 +85,8 @@ export const ChatPage = (): JSX.Element => {
   return (
     <div className="bg-background flex h-screen flex-col">
       {/* Header with phase indicator, turn counter, and start over button */}
-      <div className="border-border flex items-center justify-between border-b px-6 py-4">
-        <h1 className="text-foreground text-2xl font-semibold">Career Compass</h1>
+      <div className="border-border bg-background sticky top-0 z-40 flex items-center justify-between border-b px-6 py-4">
+        <h1 className="text-lg font-bold">Career Compass</h1>
         <div className="flex items-center gap-2">
           <PhaseBadge phase={phase} />
           {sessionId && <TurnCounter turnCount={turnCount} />}
@@ -126,7 +126,7 @@ export const ChatPage = (): JSX.Element => {
       </ScrollArea>
 
       {/* Fixed input area at bottom */}
-      <div className="border-border bg-background border-t px-6 py-4">
+      <div className="border-border bg-background sticky bottom-0 z-40 border-t px-6 py-4">
         <div className="mx-auto max-w-2xl space-y-3">
           <form
             onSubmit={(e) => {
@@ -135,26 +135,38 @@ export const ChatPage = (): JSX.Element => {
             }}
             autoComplete="off"
           >
-            <fieldset disabled={!!recommendation} className="flex gap-3">
+            <fieldset disabled={!!recommendation}>
               <div className="flex flex-1 flex-col">
-                {/* Accessible label for textarea field */}
-                <Label htmlFor="message-input" className="sr-only">
-                  Message input
-                </Label>
-                <Textarea
-                  id="message-input"
-                  placeholder={
-                    sessionId === null
-                      ? 'Describe your current role, experience, skills, and career goals...'
-                      : 'Type your message...'
-                  }
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  disabled={isPending}
-                  aria-invalid={!!error}
-                  aria-describedby={error ? 'error-message' : undefined}
-                />
+                <div className="flex gap-3">
+                  {/* Accessible label for textarea field */}
+                  <Label htmlFor="message-input" className="sr-only">
+                    Message input
+                  </Label>
+                  <Textarea
+                    id="message-input"
+                    className="max-h-48 min-h-20 resize-none border-none"
+                    placeholder={
+                      sessionId === null
+                        ? 'Describe your current role, experience, skills, and career goals...'
+                        : 'Type your message...'
+                    }
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    disabled={isPending}
+                    aria-invalid={!!error}
+                    aria-describedby={error ? 'error-message' : undefined}
+                  />
+                  <Button
+                    type="submit"
+                    variant="default"
+                    disabled={isPending || inputValue.trim() === ''}
+                    aria-label={isPending ? 'Sending message...' : 'Send message'}
+                    className="self-end px-4"
+                  >
+                    {isPending ? 'Sending...' : 'Send'}
+                  </Button>
+                </div>
                 {/* Error message display */}
                 {error && (
                   <p id="error-message" className="text-destructive mt-2 text-sm">
@@ -162,14 +174,6 @@ export const ChatPage = (): JSX.Element => {
                   </p>
                 )}
               </div>
-              <Button
-                type="submit"
-                disabled={isPending || inputValue.trim() === ''}
-                aria-label={isPending ? 'Sending message...' : 'Send message'}
-                className="mb-3 self-end px-4"
-              >
-                {isPending ? 'Sending...' : 'Send'}
-              </Button>
             </fieldset>
           </form>
 

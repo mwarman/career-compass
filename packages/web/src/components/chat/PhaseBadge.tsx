@@ -81,7 +81,7 @@ export const PhaseBadge = ({ phase }: PhaseBadgeProps): JSX.Element => (
         <SheetTitle>Phase Badge</SheetTitle>
         <SheetDescription>A visual indicator of the current conversational phase.</SheetDescription>
       </SheetHeader>
-      <div className="flex flex-col gap-4 px-8">
+      <div className="flex flex-col gap-4 px-4">
         <div>
           The Phase Badge serves as a visual indicator of the current conversational phase in the Career Compass
           application. It uses different styles to represent each phase, providing users with immediate context about
