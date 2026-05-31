@@ -14,14 +14,14 @@ export const SeedMessage = (): JSX.Element => {
   return (
     <Empty>
       <EmptyHeader className="gap-4">
-        <EmptyTitle className="font-sans">Welcome to Career Compass</EmptyTitle>
+        <EmptyTitle className="text-lg font-semibold">Welcome to Career Compass</EmptyTitle>
         <EmptyDescription>
           Share your current professional context to get personalized upskilling recommendations.
         </EmptyDescription>
         <EmptyContent>
           <div className="bg-muted text-foreground/80 rounded-lg px-4 py-3 text-sm">
             <p className="mb-2 font-medium">In the message box below, tell us:</p>
-            <ul className="list-disc space-y-1 pl-5 text-left">
+            <ul className="list-disc space-y-1 pl-12 text-left">
               <li>Your current role and experience level</li>
               <li>Technologies or skills you currently use</li>
               <li>Your career goals and aspirations</li>

@@ -30,7 +30,7 @@ export const discoverySessionStateFixture: ClientSessionState = {
 export const goalElicitationSessionStateFixture: ClientSessionState = {
   sessionId: 'session-456',
   phase: 'goalElicitation',
-  turnCount: 2,
+  turnCount: 4,
   synthesisReady: true,
   messages: [
     {
@@ -49,6 +49,26 @@ export const goalElicitationSessionStateFixture: ClientSessionState = {
       role: 'assistant',
       content:
         "Thanks for sharing! It sounds like you have strong organizational skills and an interest in analytics. Let's see what recommendations we can generate for you.",
+    },
+    {
+      role: 'user',
+      content:
+        "I would like to transition within the next 6 months and I'm open to roles that leverage my project management experience while allowing me to develop data science skills.",
+    },
+    {
+      role: 'assistant',
+      content:
+        'Thanks for providing that additional context! With your project management background and interest in data science, we can generate some personalized recommendations for career paths, skill development, and resources to help you achieve your goals within your desired timeline.',
+    },
+    {
+      role: 'user',
+      content:
+        "I have already started learning Python and SQL, but I want to make sure I'm on the right track. What should I focus on next?",
+    },
+    {
+      role: 'assistant',
+      content:
+        'It’s great that you’ve started learning Python and SQL! To further enhance your data science skills, I recommend focusing on the following areas: 1) Data Analysis: Develop your ability to manipulate and analyze data using libraries like Pandas and NumPy. 2) Machine Learning: Gain a foundational understanding of machine learning concepts and algorithms, and practice implementing them using libraries like scikit-learn. 3) Data Visualization: Learn how to create compelling visualizations using tools like Matplotlib and Seaborn to effectively communicate insights from data.',
     },
   ],
   recommendation: null,

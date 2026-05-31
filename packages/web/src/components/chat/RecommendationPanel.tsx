@@ -16,12 +16,12 @@ export interface RecommendationPanelProps {
 /**
  * Maps severity level to badge variant.
  */
-const severityToBadgeVariant = (severity: 'low' | 'medium' | 'high'): 'default' | 'warning' | 'destructive' => {
+const severityToBadgeVariant = (severity: 'low' | 'medium' | 'high'): 'default' | 'outline' | 'destructive' => {
   switch (severity) {
     case 'low':
       return 'default';
     case 'medium':
-      return 'warning';
+      return 'outline';
     case 'high':
       return 'destructive';
   }
