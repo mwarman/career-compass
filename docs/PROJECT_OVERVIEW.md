@@ -1,12 +1,5 @@
 # Project Overview: career-compass
 
-**Version:** Draft 2  
-**Date:** 2026-05-05  
-**Project Type:** Portfolio  
-**Status:** In Elaboration
-
----
-
 ## Executive Summary
 
 `career-compass` is a conversational AI application that guides professionals
@@ -18,8 +11,6 @@ phase-aware prompt architecture, hybrid conversation control, and structured
 artifact generation via Bedrock native tool use — without relying on RAG,
 agentic loops, or managed chat UIs. It is the second entry in a portfolio
 suite of AWS Bedrock-powered applications, complementing `resume-lens`.
-
----
 
 ## Goals
 
@@ -35,8 +26,6 @@ suite of AWS Bedrock-powered applications, complementing `resume-lens`.
     forming a coherent AI-powered career tooling portfolio suite
   - Maintain cost efficiency appropriate for a personally funded portfolio
     project throughout development and demonstration
-
----
 
 ## Scope
 
@@ -85,17 +74,6 @@ suite of AWS Bedrock-powered applications, complementing `resume-lens`.
 - Progressive summarization context management (documented as V2 enhancement)
 - Streaming token output / WebSocket API
 
----
-
-## Target Audience
-
-| Audience                                             | Signal Being Demonstrated                                                                                                                                                                  |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Enterprise IT clients                                | Ability to design goal-directed conversational AI workflows that extract structured insight from natural dialogue — directly applicable to L&D, onboarding, intake, and advisory use cases |
-| Technical evaluators (architects, engineering leads) | Phase-aware prompt engineering, Bedrock Converse API + tool use patterns, clean AWS-native serverless architecture, monorepo discipline, IaC maturity                                      |
-
----
-
 ## Technology Stack
 
 | Layer          | Technology / Service                                             | Rationale                                                                                                      |
@@ -109,8 +87,6 @@ suite of AWS Bedrock-powered applications, complementing `resume-lens`.
 | Observability  | CloudWatch Dashboard + Alarms                                    | Service utilization and cost-bearing metric visibility                                                         |
 | Monorepo       | npm workspaces                                                   | Single repository for portfolio reviewers; shared Zod schemas across frontend and backend                      |
 | Source Control | GitHub + GitHub Issues + GitHub Milestones                       | Issues and milestones aligned to Implementation Plan                                                           |
-
----
 
 ## Architecture Overview
 
@@ -162,8 +138,6 @@ stateDiagram-v2
     Synthesis --> Idle: User resets<br/>(start over)
 ```
 
----
-
 ## Key Design Decisions
 
 ### Decision: Bedrock Converse API vs. InvokeModelCommand
@@ -176,8 +150,6 @@ stateDiagram-v2
 **Decision:** Converse API
 **Rationale:** Correct tool for multi-turn conversation. Demonstrates breadth
 beyond `resume-lens` and awareness of the right Bedrock abstraction per use case.
-
----
 
 ### Decision: Structured Output Enforcement at Synthesis
 
@@ -195,8 +167,6 @@ the recommendation schema. Zod validates the tool input on the backend before
 the payload reaches the frontend. This is the architecturally correct pattern
 and a stronger portfolio signal than prompt coaxing.
 
----
-
 ### Decision: Context Management Strategy
 
 | Option                    | Pros                                                  | Cons                                                                |
@@ -209,8 +179,6 @@ and a stronger portfolio signal than prompt coaxing.
 **Rationale:** At a 10-turn ceiling with Haiku token pricing, full history
 is cost-acceptable and keeps the implementation clean. Progressive
 summarization is documented as a V2 enhancement.
-
----
 
 ### Decision: Phase-Aware System Prompt Architecture
 
@@ -225,8 +193,6 @@ summarization is documented as a V2 enhancement.
 on session phase stored in DynamoDB. Cleaner, more maintainable, and
 demonstrates prompt engineering discipline.
 
----
-
 ### Decision: CDK Stack Decomposition
 
 | Stack                | Contents                                                      |
@@ -240,8 +206,6 @@ demonstrates prompt engineering discipline.
 lifecycle. Storage changes independently of API logic; frontend deploys
 independently of backend; observability is additive and non-blocking.
 
----
-
 ## Constraints
 
 - **Time:** ~1 month elapsed, 80–100 hours of effort; AI-assisted coding
@@ -250,8 +214,6 @@ independently of backend; observability is additive and non-blocking.
 - **Team:** Solo
 - **Existing Systems:** `resume-lens` establishes Bedrock familiarity and
   portfolio context; `career-compass` is a new, independent project
-
----
 
 ## Risks & Mitigations
 
@@ -262,40 +224,3 @@ independently of backend; observability is additive and non-blocking.
 | Bedrock costs exceed expectations during active development                | Low        | Medium | Enable AWS billing alerts from day one; use Haiku throughout including dev/test              |
 | Prompt tuning consumes disproportionate effort                             | Medium     | Medium | Time-box prompt iteration; treat prompt quality as an incremental improvement, not a gate    |
 | CDK stack cross-dependencies introduce deployment ordering complexity      | Low        | Low    | Define explicit stack dependencies in CDK app entry point; document deploy order             |
-
----
-
-## V2 Enhancements (Post V1 Delivery)
-
-- **Progressive summarization:** Replace full history with a compressed
-  profile summary block after N turns to control token cost at scale
-- **Streaming output:** WebSocket API + Bedrock streaming for token-level
-  frontend rendering
-- **Cross-session persistence:** Optional "resume last session" capability
-  with user identifier
-
----
-
-## Open Questions
-
-- [x] Target timeframe — resolved: ~1 month, 80–100 hours
-- [x] Frontend stack — resolved: Vite + React + Tailwind + shadcn/ui +
-      TanStack Query + Axios + Zod
-- [x] Bedrock model — resolved: Claude Haiku 4.5
-- [x] Context management — resolved: full history, V1
-- [x] IaC tooling — resolved: AWS CDK, TypeScript, four stacks
-- [x] Observability — resolved: CloudWatch dashboard + alarms
-- [x] Terminal output — resolved: structured JSON via forced tool use,
-      displayed in frontend
-- [x] API design — resolved: REST
-- [x] CDK stack decomposition — resolved: four stacks, no network stack
-- [x] Project name — resolved: career-compass
-
----
-
-## Revision History
-
-| Version | Date       | Changes                                                                                                                                         |
-| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Draft 1 | 2026-05-05 | Initial brainstorming draft                                                                                                                     |
-| Draft 2 | 2026-05-05 | Full elaboration: technology stack, architecture diagrams, conversation state machine, all key design decisions resolved, open questions closed |
