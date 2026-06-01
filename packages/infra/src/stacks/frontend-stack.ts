@@ -101,7 +101,7 @@ export class FrontendStack extends cdk.Stack {
 
     // Deploy the frontend assets from packages/web/dist to the S3 bucket
     new s3deploy.BucketDeployment(this, 'DeployFrontend', {
-      sources: [s3deploy.Source.asset(path.join(import.meta.dirname, '../../../packages/web/dist'))],
+      sources: [s3deploy.Source.asset(path.join(import.meta.dirname, '../../../web/dist'))],
       destinationBucket: this.bucket,
       // Invalidate CloudFront distribution on every deployment
       // This ensures users get the latest assets immediately

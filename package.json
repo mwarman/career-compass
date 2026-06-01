@@ -25,7 +25,7 @@
     "packages/shared",
     "packages/api",
     "packages/web",
-    "infra"
+    "packages/infra"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
