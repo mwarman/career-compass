@@ -74,7 +74,7 @@ graph TB
 
 ## Storage Stack
 
-**File:** `infra/src/stacks/storage-stack.ts`
+**File:** `packages/infra/src/stacks/storage-stack.ts`
 
 ### Purpose
 
@@ -133,7 +133,7 @@ interface BedrockMessage {
 
 ## API Stack
 
-**File:** `infra/src/stacks/api-stack.ts`
+**File:** `packages/infra/src/stacks/api-stack.ts`
 
 ### Purpose
 
@@ -253,7 +253,7 @@ Scoped to:
 
 ## Frontend Stack
 
-**File:** `infra/src/stacks/frontend-stack.ts`
+**File:** `packages/infra/src/stacks/frontend-stack.ts`
 
 ### Purpose
 
@@ -331,7 +331,7 @@ React app loads and React Router handles the route
 
 ## Observability Stack
 
-**File:** `infra/src/stacks/observability-stack.ts`
+**File:** `packages/infra/src/stacks/observability-stack.ts`
 
 ### Purpose
 
