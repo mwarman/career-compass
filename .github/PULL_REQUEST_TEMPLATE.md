@@ -20,6 +20,8 @@ _Describe the changes included in this pull request. Link to the associated [Git
 _Pull request authors must complete the following tasks before marking the PR as ready to review._
 
 - [ ] Complete a self-review of changes
+- [ ] Unit tests have been created or updated
+- [ ] The code is free of \[new\] lint errors and warnings
 - [ ] Update project documentation as needed: README, /docs, JSDoc, etc.
 
 ### :test_tube: Steps to Test
