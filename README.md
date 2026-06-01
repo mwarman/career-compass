@@ -14,7 +14,7 @@
 - **Structured output generation** via AWS Bedrock forced tool use and Zod schema validation
 - **Cost-optimized inference** using Claude Haiku 4.5 on serverless compute
 
-The application is built as a thematic companion to [resume-lens](https://github.com/mwarman/resume-lens), forming a coherent portfolio suite of AWS Bedrock–powered career tooling.
+The application is built as a thematic companion to [resume-lens](https://github.com/mwarman/resume-lens) and [talent-finder](https://github.com/mwarman/talent-finder), forming a coherent portfolio suite of AWS Bedrock–powered career tooling.
 
 ---
 
@@ -169,6 +169,81 @@ npm run dev
 
 ---
 
+## Representative Conversation Example
+
+This example demonstrates a complete Career Compass session flow: initial seed input through multi-turn discovery and goal elicitation, culminating in a structured recommendation.
+
+### Seed Input (Turn 0)
+
+**User:** "I'm a backend engineer with 8 years of experience building Node.js services. I've been mostly focused on backend infrastructure but want to transition into a technical leadership role."
+
+### Turn 1: Discovery
+
+**Assistant:** "Thank you for sharing that context. It's great that you have strong backend experience. To understand your skill foundation better: Beyond your Node.js expertise, what other backend technologies or frameworks have you worked with extensively? (e.g., databases, message queues, container orchestration, etc.)"
+
+**User:** "I've worked with PostgreSQL, Redis, Docker, Kubernetes, and AWS. I've also led a couple of small projects, but mostly as an IC. I'm pretty comfortable with AWS Lambda and API Gateway."
+
+### Turn 2: Goal Elicitation
+
+**Assistant:** "Excellent — your cloud-native foundation is strong. Now let's understand your direction: When you envision a technical leadership role in 18 months, are you thinking team lead of backend engineers, engineering manager, tech lead (IC), or something else? And in which domain — backend infrastructure, full-stack, or a specific product area?"
+
+**User:** "I'd like to be a tech lead within an engineering team. I want to guide architecture decisions, mentor junior engineers, and still write code, maybe 40/60 split. Ideally in a fintech or climate tech company."
+
+### Turn 3: Synthesis Trigger
+
+**Assistant:** "Perfect. Based on our conversation, I have a clear picture of your profile and aspirations. Let me synthesize this into a prioritized upskilling roadmap."
+
+### Recommendation Artifact (Excerpt)
+
+```json
+{
+  "profileSummary": "Senior backend engineer with 8 years of Node.js/AWS experience, strong cloud-native foundation, seeking transition to technical leadership role with hands-on architecture guidance and mentorship responsibilities.",
+  "skillGaps": [
+    {
+      "name": "System design at scale",
+      "severity": "high",
+      "rationale": "Tech lead roles require fluency in designing systems for scale; your background is strong but lacks explicit distributed systems depth (CAP theorem, consensus algorithms, observability patterns)"
+    },
+    {
+      "name": "Cross-functional communication",
+      "severity": "medium",
+      "rationale": "Leading architecture decisions and mentoring requires advocating to product, data, and infrastructure teams; develop executive communication and influence without authority"
+    },
+    {
+      "name": "Emerging backend patterns",
+      "severity": "medium",
+      "rationale": "Stay current with async patterns (event sourcing), observability (tracing, metrics), and API standards relevant to fintech/climate tech stack decisions"
+    }
+  ],
+  "recommendations": [
+    {
+      "area": "Distributed Systems Fundamentals",
+      "rationale": "Tech leads must reason about system trade-offs; understand CAP theorem, consensus (Raft), and eventual consistency to guide architecture decisions",
+      "resourceCategories": [
+        "Course: MIT 6.824 or similar",
+        "Book: Designing Data-Intensive Applications",
+        "Practice: Design review participation"
+      ],
+      "estimatedEffort": "substantial",
+      "estimatedTimeline": "3-4 months"
+    },
+    {
+      "area": "Technical Leadership & Mentoring",
+      "rationale": "Your IC contributions are strong; now develop leadership competencies: delegation, code review impact, and mentoring junior engineers",
+      "resourceCategories": [
+        "Book: An Elegant Puzzle",
+        "Workshops: Radical Candor or similar",
+        "Practice: 1-on-1 mentoring sessions"
+      ],
+      "estimatedEffort": "moderate",
+      "estimatedTimeline": "2-3 months (ongoing)"
+    }
+  ]
+}
+```
+
+---
+
 ## Deployment
 
 ### CDK Deployment
@@ -252,10 +327,7 @@ All component tests follow the AAA pattern (Arrange, Act, Assert) and include:
 
 ## Documentation
 
-- [**PROJECT_OVERVIEW.md**](docs/PROJECT_OVERVIEW.md) — Detailed project goals, design decisions, risks, and V2 enhancements
-- [**IMPLEMENTATION_PLAN.md**](docs/IMPLEMENTATION_PLAN.md) — Development roadmap and milestones
-- [**CONFIGURATION_GUIDE.md**](docs/CONFIGURATION_GUIDE.md) — Environment setup and configuration
-- [**API Reference**](docs/README.md) — REST API endpoint documentation
+For detailed guides and documentation about this project, see the [documentation table of contents](./docs/README.md).
 
 ---
 
