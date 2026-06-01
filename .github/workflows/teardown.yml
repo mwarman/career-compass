@@ -42,7 +42,7 @@ jobs:
           role-session-name: teardown-career-compass-${{ github.run_id }}
 
       - name: Synthesize CDK stacks
-        run: npm run synth -w infra
+        run: npm run cdk:synth --workspace packages/infra
 
       - name: Teardown infrastructure
-        run: npm run destroy:all --workspace infra
+        run: npm run cdk:destroy:all --workspace packages/infra

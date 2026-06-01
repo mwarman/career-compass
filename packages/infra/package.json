@@ -11,12 +11,12 @@
   "scripts": {
     "build": "tsc",
     "cdk": "cdk",
-    "synth": "cdk synth",
-    "deploy": "cdk deploy --require-approval never",
-    "deploy:all": "cdk deploy --all --require-approval never",
-    "destroy": "cdk destroy --force",
-    "destroy:all": "cdk destroy --all --force",
-    "lint": "eslint src --ext .ts,.tsx",
+    "cdk:deploy": "cdk deploy --require-approval never",
+    "cdk:deploy:all": "cdk deploy --all --require-approval never",
+    "cdk:destroy": "cdk destroy --force",
+    "cdk:destroy:all": "cdk destroy --all --force",
+    "precdk:synth": "npm run build",
+    "cdk:synth": "cdk synth",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "clean": "rimraf coverage dist cdk.out"
