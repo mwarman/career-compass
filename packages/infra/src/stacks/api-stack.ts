@@ -59,7 +59,7 @@ export class ApiStack extends cdk.Stack {
 
       // handler and entry point for the Lambda function
       handler: 'handler',
-      entry: path.join(import.meta.dirname, '../../../packages/api/src/handlers/conversation-handler.ts'),
+      entry: path.join(import.meta.dirname, '../../../api/src/handlers/conversation-handler.ts'),
 
       // Bundling options for esbuild
       bundling: {

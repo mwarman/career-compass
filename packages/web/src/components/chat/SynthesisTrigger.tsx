@@ -68,7 +68,8 @@ export const SynthesisTrigger = ({
     <Button
       onClick={onTrigger}
       disabled={isSubmitting}
-      className={`w-full transition-all ${synthesisReady ? 'ring-primary animate-pulse ring-2 ring-offset-2' : ''}`}
+      variant="secondary"
+      className={`w-full transition-all ${synthesisReady ? 'animate-pulse' : ''}`}
       aria-label="Submit synthesis trigger to get recommendations"
       title="Click to receive personalized career recommendations"
     >

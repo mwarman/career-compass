@@ -49,7 +49,7 @@ export const TurnCounter = ({ turnCount }: TurnCounterProps): JSX.Element => {
           <SheetTitle>Conversation Turn Counter</SheetTitle>
           <SheetDescription>Displays the current turn number and maximum turns in the conversation.</SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-4 px-8">
+        <div className="flex flex-col gap-4 px-4">
           <div>
             The Turn Counter provides users with clear visibility into the current turn number and the maximum number of
             turns allowed in the conversation. It is designed to help users understand how many interactions they have

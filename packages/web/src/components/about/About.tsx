@@ -27,7 +27,7 @@ export const About = (): JSX.Element => {
           <SheetTitle>About Career Compass</SheetTitle>
           <SheetDescription>An AI-powered portfolio project</SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-4 px-8">
+        <div className="flex flex-col gap-4 px-4">
           <div>
             This portfolio project demonstrates the capabilities of Career Compass, an AI-powered conversational
             assistant. It guides users through a focused, career-oriented conversation and provides insights based on AI

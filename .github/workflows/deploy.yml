@@ -42,10 +42,10 @@ jobs:
           role-session-name: deploy-career-compass-${{ github.run_id }}
 
       - name: Synthesize CDK stacks
-        run: npm run synth -w infra
+        run: npm run cdk:synth --workspace packages/infra
 
       - name: Deploy backend stack
-        run: npm run cdk deploy -w infra -- CareerCompassApiStack --require-approval never
+        run: npm run cdk:deploy --workspace packages/infra -- CareerCompassApiStack --require-approval never
 
       - name: Retrieve API Gateway URL
         id: get-api-url
@@ -61,7 +61,7 @@ jobs:
         run: npm run build -w packages/web
 
       - name: Deploy frontend stack
-        run: npm run cdk deploy -w infra -- CareerCompassFrontendStack --require-approval never
+        run: npm run cdk:deploy --workspace packages/infra -- CareerCompassFrontendStack --require-approval never
 
       - name: Deploy observability stack
-        run: npm run cdk deploy -w infra -- CareerCompassObservabilityStack --require-approval never
+        run: npm run cdk:deploy --workspace packages/infra -- CareerCompassObservabilityStack --require-approval never

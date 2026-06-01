@@ -179,9 +179,6 @@ describe('SynthesisTrigger', () => {
 
       const button = screen.getByRole('button');
       expect(button.className).toContain('animate-pulse');
-      expect(button.className).toContain('ring-2');
-      expect(button.className).toContain('ring-primary');
-      expect(button.className).toContain('ring-offset-2');
     });
 
     it('should not apply pulse animation when synthesisReady is false', () => {
