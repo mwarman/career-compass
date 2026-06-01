@@ -6,6 +6,7 @@ Welcome to the project documentation for the `career-compass` project. This dire
 
 - [Project Overview](./PROJECT_OVERVIEW.md): An overview of this project: goals, scope, stacks, and architecture.
 - [Configuration Guide](./CONFIGURATION_GUIDE.md): Describes how to configure the application components on local machines and hosted environments.
+- [Infrastructure Guide](./INFRASTRUCTURE_GUIDE.md): The AWS infrastructure provisioned to host this project.
 - [DevOps Guide](./DEVOPS_GUIDE.md): Describes the deployment, continuous integration, and operational practices.
 
 <br/>
