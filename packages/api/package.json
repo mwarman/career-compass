@@ -1,6 +1,6 @@
 {
   "name": "@career-compass/api",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Backend API service",
   "private": true,
   "main": "dist/index.js",
@@ -13,16 +13,16 @@
     "clean": "rimraf coverage dist"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "3.1057.0",
-    "@aws-sdk/client-dynamodb": "3.1057.0",
-    "@aws-sdk/lib-dynamodb": "3.1057.0",
+    "@aws-sdk/client-bedrock-runtime": "3.1145.0",
+    "@aws-sdk/client-dynamodb": "3.1145.0",
+    "@aws-sdk/lib-dynamodb": "3.1145.0",
     "@career-compass/shared": "*",
-    "zod": "4.4.3"
+    "zod": "4.6.5"
   },
   "devDependencies": {
-    "@types/aws-lambda": "8.10.161",
-    "@types/node": "25.9.1",
-    "@vitest/coverage-v8": "4.1.7",
-    "vitest": "4.1.7"
+    "@types/aws-lambda": "8.10.164",
+    "@types/node": "26.6.4",
+    "@vitest/coverage-v8": "5.0.3",
+    "vitest": "5.0.3"
   }
 }
