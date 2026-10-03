@@ -4,6 +4,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "lib": ["ES2022", "dom", "dom.iterable"],
+    "types": ["node", "vitest/globals"],
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]

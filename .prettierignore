@@ -1,1 +1,7 @@
+# Prettier ignore file
+
+# Ignore GitHub code owners file
 .github/CODEOWNERS
+
+# Ignore all Shadcn components
+**/components/shadcn/**
