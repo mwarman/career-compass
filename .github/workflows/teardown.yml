@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: npm
@@ -46,3 +46,7 @@ jobs:
 
       - name: Teardown infrastructure
         run: npm run cdk:destroy:all --workspace packages/infra
+
+      - name: Cleanup
+        if: always()
+        run: npm run clean
