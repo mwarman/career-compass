@@ -1,3 +1,6 @@
+/**
+ * TypeScript configuration for the API package.
+ */
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {

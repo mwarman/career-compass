@@ -1,3 +1,6 @@
+/**
+ * Base TypeScript configuration for the project.
+ */
 {
   "compilerOptions": {
     "strict": true,
@@ -24,6 +27,5 @@
     "target": "es2022",
     "lib": ["ES2022"]
   },
-  "include": [],
   "exclude": ["node_modules", "dist", "build", "coverage"]
 }

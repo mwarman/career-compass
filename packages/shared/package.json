@@ -1,8 +1,9 @@
 {
   "name": "@career-compass/shared",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared utilities and types",
   "private": true,
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -19,10 +20,7 @@
     "clean": "rimraf dist coverage"
   },
   "dependencies": {
-    "zod": "4.4.3"
+    "zod": "4.6.5"
   },
-  "devDependencies": {
-    "@vitest/coverage-v8": "4.1.7",
-    "vitest": "4.1.7"
-  }
+  "devDependencies": {}
 }

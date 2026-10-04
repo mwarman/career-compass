@@ -1,6 +1,5 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import importPlugin from 'eslint-plugin-import';
 
 export default [
   {
@@ -49,33 +48,6 @@ export default [
           varsIgnorePattern: '^_',
         },
       ],
-    },
-  },
-  {
-    files: ['**/*.{ts,tsx,js,mjs,cjs}'],
-    plugins: {
-      import: importPlugin,
-    },
-    rules: {
-      'import/order': [
-        'error',
-        {
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-          pathGroups: [
-            {
-              pattern: '@career-compass/**',
-              group: 'internal',
-            },
-          ],
-          'newlines-between': 'always',
-          distinctGroup: true,
-          alphabetize: {
-            order: 'asc',
-            caseInsensitive: true,
-          },
-        },
-      ],
-      'import/no-cycle': 'error',
     },
   },
 ];
