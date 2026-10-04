@@ -20,7 +20,7 @@ The Career Compass monorepo is structured as an npm workspace with four primary 
 
 - **`packages/web`**: React SPA frontend built with Vite. Implements the user-facing conversation interface, manages client-side state with React Query, communicates with the API via Axios, and renders components using shadcn/ui + Tailwind CSS. Uses CSS variables and OKLch color spaces for theming.
 
-- **`infra`**: AWS CDK infrastructure definition. Deploys all cloud resources including DynamoDB tables, Lambda functions, API Gateway, S3 buckets, CloudFront distributions, and CloudWatch dashboards. Configures resource permissions, environment variables, and monitoring.
+- **`packages/infra`**: AWS CDK infrastructure definition. Deploys all cloud resources including DynamoDB tables, Lambda functions, API Gateway, S3 buckets, CloudFront distributions, and CloudWatch dashboards. Configures resource permissions, environment variables, and monitoring.
 
 Cross-package imports use the `@career-compass/*` scope and workspace resolution. Use path aliases (`@/*`) in the web package to import components and utilities.
 
