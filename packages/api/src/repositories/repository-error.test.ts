@@ -1,4 +1,4 @@
-import { RepositoryError } from '../repository-error';
+import { RepositoryError } from './repository-error';
 
 describe('RepositoryError', () => {
   it('should create error with message, operation, and statusCode', () => {

@@ -6,18 +6,18 @@
 import { SessionState, TurnRequest } from '@career-compass/shared';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-import { SessionRepository } from '../../repositories/session-repository';
+import { SessionRepository } from './../repositories/session-repository';
 import {
   DISCOVERY_TO_GOAL_ELICITATION_THRESHOLD,
   GOAL_ELICITATION_MAX_TURNS,
   SYNTHESIS_TRIGGER_PHRASE,
-} from '../../utils/constants';
-import { BedrockService } from '../bedrock-service';
-import { ConversationService } from '../conversation-service';
+} from './../utils/constants';
+import { BedrockService } from './bedrock-service';
+import { ConversationService } from './conversation-service';
 
-vi.mock('../../repositories/session-repository');
-vi.mock('../../utils/logger');
-vi.mock('../bedrock-service');
+vi.mock('./../repositories/session-repository');
+vi.mock('./../utils/logger');
+vi.mock('./bedrock-service');
 
 describe('ConversationService', () => {
   const mockSession: SessionState = {

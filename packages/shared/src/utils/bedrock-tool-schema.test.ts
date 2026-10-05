@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
-import { RecommendationSchema, type Recommendation } from '../../schemas/recommendation-schema';
-import { getRecommendationToolSchema } from '../bedrock-tool-schema';
+import { RecommendationSchema, type Recommendation } from '../schemas/recommendation-schema';
+import { getRecommendationToolSchema } from './bedrock-tool-schema';
 
 describe('getRecommendationToolSchema', () => {
   it('should return a JSON Schema object', () => {

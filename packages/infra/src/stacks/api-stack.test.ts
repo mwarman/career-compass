@@ -4,7 +4,7 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { ApiStack } from '../api-stack';
+import { ApiStack } from './api-stack';
 
 /**
  * Tests for the ApiStack CDK construct.

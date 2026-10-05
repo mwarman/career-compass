@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { RecommendationSchema, type Recommendation } from '../recommendation-schema';
+import { RecommendationSchema, type Recommendation } from './recommendation-schema';
 
 describe('RecommendationSchema', () => {
   const validRecommendation: Recommendation = {

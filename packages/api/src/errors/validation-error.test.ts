@@ -1,4 +1,4 @@
-import { ValidationError } from '../validation-error';
+import { ValidationError } from './validation-error';
 
 describe('ValidationError', () => {
   it('should create error with message and statusCode', () => {

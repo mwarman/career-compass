@@ -1,4 +1,4 @@
-import { BedrockError } from '../bedrock-error';
+import { BedrockError } from './bedrock-error';
 
 describe('BedrockError', () => {
   it('should create error with message and statusCode', () => {

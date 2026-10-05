@@ -9,14 +9,14 @@ import { APIGatewayProxyEventV2 } from 'aws-lambda';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock external dependencies before importing the handler
-vi.mock('../../repositories/session-repository');
-vi.mock('../../services/conversation-service');
-vi.mock('../../utils/logger');
+vi.mock('./../repositories/session-repository');
+vi.mock('./../services/conversation-service');
+vi.mock('./../utils/logger');
 
 // Import after mocks are defined
-import { SessionRepository } from '../../repositories/session-repository';
-import { ConversationService } from '../../services/conversation-service';
-import { handler } from '../conversation-handler';
+import { SessionRepository } from './../repositories/session-repository';
+import { ConversationService } from './../services/conversation-service';
+import { handler } from './conversation-handler';
 
 describe('conversationHandler', () => {
   const mockSessionState: SessionState = {

@@ -3,7 +3,7 @@
  * Tests all response builder functions and CORS header inclusion.
  */
 
-import { ok, created, badRequest, notFound, internalServerError, errorResponse } from '../apigateway-response';
+import { ok, created, badRequest, notFound, internalServerError, errorResponse } from './apigateway-response';
 
 describe('apigateway-response', () => {
   describe('CORS headers', () => {
