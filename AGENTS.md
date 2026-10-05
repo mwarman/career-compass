@@ -202,7 +202,7 @@ A task is complete only when all of the following hold:
 
 1. **Zero regressions:** `npm run format:check`, `npm run lint`, and `npm run build` exit with code `0`.
 2. **Tests pass:** `npm run test` passes for every affected package.
-3. **Co-located tests:** Every new or modified source file has a partner test file in the same directory (`foo.ts` → `foo.test.ts`, `Foo.tsx` → `Foo.test.tsx`). Existing tests under `__tests__/` directories in `api`, `shared`, and `infra` are legacy; when you modify tests for a module, move them next to its source.
+3. **Co-located tests:** Every new or modified source file has a partner test file in the same directory (`foo.ts` → `foo.test.ts`, `Foo.tsx` → `Foo.test.tsx`).
 4. **AAA structure:** Tests use explicit `// Arrange`, `// Act`, and `// Assert` comments, are grouped in `describe()` blocks, and are named "should [expected behavior] when [condition]".
 5. **Testing standards:**
    - **Framework:** Vitest for all packages.
