@@ -1,16 +1,24 @@
-import { ArrowLeftFromLine } from 'lucide-react';
-import { JSX, useState } from 'react';
+import { ArrowLeftFromLine, ArrowUp } from 'lucide-react';
+import { JSX, useRef, useState } from 'react';
 
 import { About } from '@/components/about/About';
 import { MessageList } from '@/components/chat/MessageList';
 import { PhaseBadge } from '@/components/chat/PhaseBadge';
+import { ReasoningIndicator } from '@/components/chat/ReasoningIndicator';
 import { RecommendationPanel } from '@/components/chat/RecommendationPanel';
 import { SeedMessage } from '@/components/chat/SeedMessage';
 import { SynthesisTrigger } from '@/components/chat/SynthesisTrigger';
 import { TurnCounter } from '@/components/chat/TurnCounter';
 import { Button } from '@/components/shadcn/button';
 import { Label } from '@/components/shadcn/label';
-import { ScrollArea } from '@/components/shadcn/scroll-area';
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from '@/components/shadcn/message-scroller';
 import { Textarea } from '@/components/shadcn/textarea';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { useSession } from '@/context/SessionContext';
@@ -22,30 +30,50 @@ import { SYNTHESIS_TRIGGER_PHRASE } from '@/utils/constants';
  * Displays:
  * - Phase indicator badge, turn counter, and "Start Over" button in header
  * - Seed input view when sessionId is null
- * - Scrollable message history with auto-scroll to bottom when sessionId is populated
+ * - Scrollable message history with smart anchoring when sessionId is populated
+ * - Reasoning indicator ("Thinking...") while a turn is in flight
  * - RecommendationPanel when recommendation object is available
  * - Textarea for message submission with Enter to submit, Shift+Enter for newlines
  * - Synthesis trigger button to explicitly request recommendations
  * - Submit button with loading state
+ *
+ * Uses MessageScroller for advanced scroll behavior:
+ * - Auto-scrolls to latest message while user is reading
+ * - Anchors new user turns near the top of the viewport
+ * - Preserves scroll position while assistant reply streams in
  */
 export const ChatPage = (): JSX.Element => {
   const { messages, phase, sessionId, recommendation, turnCount, synthesisReady, resetSession } = useSession();
   const { mutate: submitTurn, isPending, error } = useSubmitTurn();
   const [inputValue, setInputValue] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   /**
    * Handle form submission.
+   * Clears textarea immediately, then submits. On success, focuses textarea.
+   * On error, repopulates textarea with the message and focuses it.
    */
   const handleSubmit = (): void => {
     if (inputValue.trim() === '' || isPending) {
       return;
     }
 
+    const messageToSubmit = inputValue.trim();
+    setInputValue(''); // Clear immediately
+
     submitTurn(
-      { userMessage: inputValue.trim() },
+      { userMessage: messageToSubmit },
       {
         onSuccess: () => {
-          setInputValue('');
+          // Focus textarea after response is received
+          setTimeout(() => {
+            textareaRef.current?.focus();
+          }, 0);
+        },
+        onError: () => {
+          // Repopulate textarea and focus on error
+          setInputValue(messageToSubmit);
+          textareaRef.current?.focus();
         },
       },
     );
@@ -107,23 +135,41 @@ export const ChatPage = (): JSX.Element => {
         </div>
       </div>
 
-      {/* Scrollable message history, seed prompt, and recommendation panel */}
-      <ScrollArea className="min-h-0 flex-1 px-6 py-4">
-        <div className="mx-auto max-w-2xl space-y-6">
-          {sessionId === null ? (
-            <SeedMessage />
-          ) : messages.length === 0 ? (
-            <div className="text-muted-foreground flex h-full items-center justify-center">
-              <p>Start a conversation to receive career guidance.</p>
-            </div>
-          ) : (
-            <>
-              <MessageList messages={messages} />
-              {recommendation && <RecommendationPanel recommendation={recommendation} />}
-            </>
-          )}
-        </div>
-      </ScrollArea>
+      {/* Message scroll area with smart anchoring and auto-scroll */}
+      <MessageScrollerProvider defaultScrollPosition="end" autoScroll scrollPreviousItemPeek={64}>
+        <MessageScroller className="min-h-0 flex-1">
+          <MessageScrollerViewport>
+            <MessageScrollerContent aria-busy={isPending} className="mx-auto max-w-2xl space-y-6 px-6 py-4">
+              {sessionId === null ? (
+                <MessageScrollerItem messageId="seed" scrollAnchor={false}>
+                  <SeedMessage />
+                </MessageScrollerItem>
+              ) : messages.length === 0 && !isPending ? (
+                <MessageScrollerItem messageId="empty" scrollAnchor={false}>
+                  <div className="text-muted-foreground flex h-full items-center justify-center">
+                    <p>Start a conversation to receive career guidance.</p>
+                  </div>
+                </MessageScrollerItem>
+              ) : (
+                <>
+                  <MessageList messages={messages} />
+                  {isPending && (
+                    <MessageScrollerItem messageId="reasoning" scrollAnchor={false}>
+                      <ReasoningIndicator />
+                    </MessageScrollerItem>
+                  )}
+                  {recommendation && (
+                    <MessageScrollerItem messageId="recommendation" scrollAnchor={false}>
+                      <RecommendationPanel recommendation={recommendation} />
+                    </MessageScrollerItem>
+                  )}
+                </>
+              )}
+            </MessageScrollerContent>
+          </MessageScrollerViewport>
+          <MessageScrollerButton />
+        </MessageScroller>
+      </MessageScrollerProvider>
 
       {/* Fixed input area at bottom */}
       <div className="border-border bg-background sticky bottom-0 z-40 border-t px-6 py-4">
@@ -137,14 +183,15 @@ export const ChatPage = (): JSX.Element => {
           >
             <fieldset disabled={!!recommendation}>
               <div className="flex flex-1 flex-col">
-                <div className="flex gap-3">
+                <div className="relative">
                   {/* Accessible label for textarea field */}
                   <Label htmlFor="message-input" className="sr-only">
                     Message input
                   </Label>
                   <Textarea
+                    ref={textareaRef}
                     id="message-input"
-                    className="max-h-48 min-h-20 resize-none border-none"
+                    className="max-h-48 min-h-20 resize-none border pr-14"
                     placeholder={
                       sessionId === null
                         ? 'Describe your current role, experience, skills, and career goals...'
@@ -157,14 +204,17 @@ export const ChatPage = (): JSX.Element => {
                     aria-invalid={!!error}
                     aria-describedby={error ? 'error-message' : undefined}
                   />
+                  {/* Submit button positioned inside textarea lower right corner */}
                   <Button
                     type="submit"
+                    size="icon"
                     variant="default"
                     disabled={isPending || inputValue.trim() === ''}
                     aria-label={isPending ? 'Sending message...' : 'Send message'}
-                    className="self-end px-4"
+                    className="absolute right-2 bottom-2 h-8 w-8 rounded-full"
                   >
-                    {isPending ? 'Sending...' : 'Send'}
+                    <ArrowUp className="h-4 w-4" />
+                    <span className="sr-only">Send</span>
                   </Button>
                 </div>
                 {/* Error message display */}

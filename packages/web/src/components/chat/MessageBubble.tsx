@@ -1,8 +1,8 @@
-import { cva } from 'class-variance-authority';
 import { JSX } from 'react';
 
 import { Markdown } from '@/components/common/Markdown';
-import { Item } from '@/components/shadcn/item';
+import { Bubble, BubbleContent } from '@/components/shadcn/bubble';
+import { Message, MessageContent } from '@/components/shadcn/message';
 
 /**
  * Props for the MessageBubble component.
@@ -15,39 +15,10 @@ export interface MessageBubbleProps {
 }
 
 /**
- * Class variance for the message bubble wrapper, controlling alignment based on message role.
- */
-const wrapperVariants = cva('flex mb-4', {
-  variants: {
-    role: {
-      user: 'justify-end',
-      assistant: 'justify-start',
-    },
-  },
-  defaultVariants: {
-    role: 'assistant',
-  },
-});
-
-/**
- * Class variance for the message bubble item, controlling styling based on message role.
- */
-const itemVariants = cva('max-w-4/5 rounded-lg p-4', {
-  variants: {
-    role: {
-      user: 'border-primary bg-primary text-primary-foreground',
-      assistant: '',
-    },
-  },
-  defaultVariants: {
-    role: 'assistant',
-  },
-});
-
-/**
  * MessageBubble component renders a single message in the chat interface.
- * User messages are right-aligned with a blue background.
- * Assistant messages are left-aligned with a neutral background.
+ * Uses shadcn Message and Bubble components for proper alignment and styling.
+ * User messages are right-aligned with a primary color bubble.
+ * Assistant messages are left-aligned with a ghost (unframed) bubble.
  *
  * @param props - Component props
  * @param props.role - Message role ('user' or 'assistant')
@@ -55,12 +26,18 @@ const itemVariants = cva('max-w-4/5 rounded-lg p-4', {
  */
 export const MessageBubble = ({ role, content }: MessageBubbleProps): JSX.Element => {
   const isUser = role === 'user';
+  const align = isUser ? 'end' : 'start';
+  const variant = isUser ? 'default' : 'ghost';
 
   return (
-    <div className={wrapperVariants({ role })}>
-      <Item variant={isUser ? 'outline' : 'muted'} className={itemVariants({ role })}>
-        <Markdown className="text-sm leading-relaxed">{content}</Markdown>
-      </Item>
-    </div>
+    <Message align={align}>
+      <MessageContent>
+        <Bubble variant={variant} align={align}>
+          <BubbleContent>
+            <Markdown className="text-sm leading-relaxed">{content}</Markdown>
+          </BubbleContent>
+        </Bubble>
+      </MessageContent>
+    </Message>
   );
 };

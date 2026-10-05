@@ -1,6 +1,7 @@
-import { JSX, useEffect, useRef } from 'react';
+import { JSX } from 'react';
 
 import { MessageBubble } from '@/components/chat/MessageBubble';
+import { MessageScrollerItem } from '@/components/shadcn/message-scroller';
 import { Message } from '@/context/SessionContext';
 
 /**
@@ -13,31 +14,18 @@ export interface MessageListProps {
 
 /**
  * MessageList component renders the conversation message history.
- * Handles auto-scroll to bottom when new messages arrive.
+ * Each message is wrapped in a MessageScrollerItem for proper scroll handling.
+ * User messages are marked as scroll anchors to position new turns near the top of the viewport.
  *
  * @param props - Component props
  * @param props.messages - Array of messages to display
  */
-export const MessageList = ({ messages }: MessageListProps): JSX.Element => {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  /**
-   * Auto-scroll to bottom when messages change.
-   */
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  return (
-    <>
-      {/* Message list with ARIA role for accessibility */}
-      <div role="log" aria-label="Conversation messages" className="space-y-2">
-        {messages.map((message, index) => (
-          <MessageBubble key={index} role={message.role} content={message.content} />
-        ))}
-      </div>
-      {/* Anchor for auto-scroll to bottom */}
-      <div ref={messagesEndRef} />
-    </>
-  );
-};
+export const MessageList = ({ messages }: MessageListProps): JSX.Element => (
+  <>
+    {messages.map((message, index) => (
+      <MessageScrollerItem key={index} messageId={String(index)} scrollAnchor={message.role === 'user'}>
+        <MessageBubble role={message.role} content={message.content} />
+      </MessageScrollerItem>
+    ))}
+  </>
+);

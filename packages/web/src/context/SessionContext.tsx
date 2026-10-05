@@ -36,6 +36,10 @@ export interface ClientSessionState {
 export interface SessionActions {
   /** Update part or all of the session state */
   updateState: (updates: Partial<ClientSessionState>) => void;
+  /** Append a message to the end of the messages array */
+  appendMessage: (message: Message) => void;
+  /** Remove the last message from the messages array */
+  removeLastMessage: () => void;
   /** Reset all session state to initial values */
   resetSession: () => void;
 }
@@ -76,6 +80,14 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
     setState((prev) => ({ ...prev, ...updates }));
   };
 
+  const appendMessage = (message: Message): void => {
+    setState((prev) => ({ ...prev, messages: [...prev.messages, message] }));
+  };
+
+  const removeLastMessage = (): void => {
+    setState((prev) => ({ ...prev, messages: prev.messages.slice(0, -1) }));
+  };
+
   const resetSession = (): void => {
     setState(INITIAL_STATE);
   };
@@ -83,6 +95,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }): JSX.Elem
   const value: SessionContextType = {
     ...state,
     updateState,
+    appendMessage,
+    removeLastMessage,
     resetSession,
   };
 
