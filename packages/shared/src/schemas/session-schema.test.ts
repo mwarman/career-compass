@@ -6,7 +6,7 @@ import {
   SessionStateSchema,
   type BedrockMessage,
   type SessionState,
-} from '../session-schema';
+} from './session-schema';
 
 describe('ConversationPhaseSchema', () => {
   describe('valid phases', () => {

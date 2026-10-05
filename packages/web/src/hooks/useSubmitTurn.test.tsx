@@ -44,6 +44,8 @@ const createMockSession = () => ({
   messages: [] as Array<{ role: 'user' | 'assistant'; content: string }>,
   recommendation: null,
   updateState: vi.fn(),
+  appendMessage: vi.fn(),
+  removeLastMessage: vi.fn(),
   resetSession: vi.fn(),
 });
 
@@ -96,15 +98,24 @@ describe('useSubmitTurn', () => {
       expect(result.current.isPending).toBe(false);
     });
 
+    // Verify appendMessage was called for user message (onMutate)
+    expect(mockSession.appendMessage).toHaveBeenCalledWith({
+      role: 'user',
+      content: 'Hello, assistant!',
+    });
+
+    // Verify appendMessage was called for assistant message (onSuccess)
+    expect(mockSession.appendMessage).toHaveBeenCalledWith({
+      role: 'assistant',
+      content: 'Great question! Let me help you with that.',
+    });
+
+    // Verify updateState was called with metadata
     expect(mockSession.updateState).toHaveBeenCalledWith({
       sessionId: 'session-123',
       phase: 'discovery',
       turnCount: 1,
       synthesisReady: false,
-      messages: [
-        { role: 'user', content: 'Hello, assistant!' },
-        { role: 'assistant', content: 'Great question! Let me help you with that.' },
-      ],
     });
   });
 

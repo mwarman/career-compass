@@ -4,7 +4,7 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { describe, it, expect } from 'vitest';
 
-import { FrontendStack } from '../frontend-stack.js';
+import { FrontendStack } from './frontend-stack.js';
 
 describe('FrontendStack', () => {
   it('should create a stack with the correct stack name', () => {

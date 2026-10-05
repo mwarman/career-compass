@@ -47,8 +47,8 @@ vi.mock('@aws-sdk/lib-dynamodb', () => {
 vi.mock('../../utils/logger');
 
 // Import after mocking AWS SDK
-import { RepositoryError } from '../repository-error';
-import { SessionRepository } from '../session-repository';
+import { RepositoryError } from './repository-error';
+import { SessionRepository } from './session-repository';
 
 describe('SessionRepository', () => {
   const mockSessionState: SessionState = {

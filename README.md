@@ -125,9 +125,9 @@ Phase transitions are driven by:
 career-compass/
 ├── packages/
 │   ├── api/              # Backend Lambda functions & API logic
+│   ├── infra/            # AWS CDK IaC
 │   ├── shared/           # Shared TypeScript types & Zod schemas
 │   └── web/              # Frontend React SPA (Vite)
-├── infra/                # AWS CDK IaC (four stacks)
 ├── docs/                 # Project documentation
 ├── package.json          # Root workspace config
 └── tsconfig.base.json    # Root TypeScript config
@@ -141,21 +141,24 @@ Each package maintains its own `package.json`, `tsconfig.json`, and source tree.
 
 ### Prerequisites
 
-- Node.js ≥ 24.15.0, npm ≥ 11.12.1
+- Node.js 24.21.0, npm 11.19.0 (Use `nvm` to automatically install and use the required versions.)
 - AWS credentials configured locally
 - Bedrock API access enabled in your AWS account
 
 ### Setup
 
 ```bash
+# Setup Node.js with Node Version Manager
+nvm use
+
 # Install dependencies (all workspaces)
 npm install
 
 # Build all packages
-npm run build --workspaces
+npm run build
 
 # Run tests
-npm test --workspaces
+npm test
 ```
 
 ### Development Workflow
@@ -260,8 +263,8 @@ The infrastructure is organized into four stacks:
 **Deploy all stacks:**
 
 ```bash
-cd infra
-npm run deploy
+npm run build
+npm run cdk:deploy:all -w packages/infra
 ```
 
 ### CI/CD
@@ -303,13 +306,13 @@ The project maintains comprehensive unit test coverage across all packages.
 **Run all tests:**
 
 ```bash
-npm run test --workspaces
+npm run test
 ```
 
 **Run tests with coverage:**
 
 ```bash
-npm run test:coverage -w packages/web
+npm run test:coverage
 ```
 
 ### Frontend Component Testing

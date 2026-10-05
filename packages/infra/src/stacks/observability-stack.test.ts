@@ -2,9 +2,9 @@ import * as cdk from 'aws-cdk-lib';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { ApiStack } from '../api-stack';
-import { ObservabilityStack } from '../observability-stack';
-import { StorageStack } from '../storage-stack';
+import { ApiStack } from './api-stack';
+import { ObservabilityStack } from './observability-stack';
+import { StorageStack } from './storage-stack';
 
 /**
  * Tests for the ObservabilityStack CDK construct.

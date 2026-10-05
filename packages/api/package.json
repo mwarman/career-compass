@@ -14,9 +14,9 @@
     "clean": "rimraf coverage dist"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock-runtime": "3.1145.0",
-    "@aws-sdk/client-dynamodb": "3.1145.0",
-    "@aws-sdk/lib-dynamodb": "3.1145.0",
+    "@aws-sdk/client-bedrock-runtime": "3.1146.0",
+    "@aws-sdk/client-dynamodb": "3.1146.0",
+    "@aws-sdk/lib-dynamodb": "3.1146.0",
     "@career-compass/shared": "*",
     "zod": "4.6.5"
   },

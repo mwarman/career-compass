@@ -1,4 +1,4 @@
-import { SessionNotFoundError } from '../session-not-found-error';
+import { SessionNotFoundError } from './session-not-found-error';
 
 describe('SessionNotFoundError', () => {
   it('should create error with sessionId', () => {

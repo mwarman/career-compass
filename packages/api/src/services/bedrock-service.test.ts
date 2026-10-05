@@ -31,8 +31,8 @@ vi.mock('@aws-sdk/client-bedrock-runtime', () => {
 vi.mock('../../utils/logger');
 
 // Import the service after mocking dependencies
-import { BedrockError } from '../../errors/bedrock-error';
-import { BedrockService } from '../bedrock-service';
+import { BedrockError } from './../errors/bedrock-error';
+import { BedrockService } from './bedrock-service';
 
 describe('BedrockService', () => {
   const systemPrompt = "You are a career advisor. Ask about the user's experience.";

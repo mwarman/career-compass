@@ -36,8 +36,9 @@ export interface SubmitTurnResult {
  * - Reads sessionId from session context (null on first turn)
  * - Posts { sessionId?, userMessage } to POST /conversation/turn
  * - Validates response against TurnResponseSchema
- * - On success: updates session context atomically with returned session data and messages
- * - On synthesis response: stores recommendation in session context
+ * - Optimistically appends user message on mutate (onMutate)
+ * - On success: appends assistant message and updates session context atomically
+ * - On error: removes the optimistic user message (rollback)
  * - Surfaces errors as typed APIError objects
  *
  * @returns Mutation state with isPending and error handling
@@ -61,7 +62,11 @@ export const useSubmitTurn = (
   const session = useSession();
 
   const mutation = useMutation<void, Error, SubmitTurnVariables>({
-    mutationFn: async (variables: SubmitTurnVariables): Promise<void> => {
+    onMutate: async (variables: SubmitTurnVariables): Promise<void> => {
+      // Optimistically append user message so it renders immediately
+      session.appendMessage({ role: 'user', content: variables.userMessage });
+    },
+    mutationFn: async (variables: SubmitTurnVariables) => {
       // Build request body with optional sessionId
       const requestBody = {
         sessionId: session.sessionId || undefined,
@@ -76,31 +81,37 @@ export const useSubmitTurn = (
       // Send request to API
       const response = await apiClient.post<unknown>('/conversation/turn', requestBody);
 
-      // Validate response against schema
-      const validatedResponse = TurnResponseSchema.parse(response.data);
-
-      // Atomically update session state based on response type
+      // Validate response against schema and return (don't update state here)
+      return TurnResponseSchema.parse(response.data);
+    },
+    onSuccess: (validatedResponse) => {
+      // Update session state based on response type
       if (validatedResponse.type === 'conversational') {
+        // Append assistant message (user message already appended optimistically)
+        session.appendMessage({
+          role: 'assistant',
+          content: validatedResponse.assistantMessage,
+        });
+        // Update session metadata
         session.updateState({
           sessionId: validatedResponse.sessionId,
           phase: validatedResponse.phase,
           turnCount: validatedResponse.turnCount,
           synthesisReady: validatedResponse.synthesisReady,
-          messages: [
-            ...session.messages,
-            { role: 'user', content: variables.userMessage },
-            { role: 'assistant', content: validatedResponse.assistantMessage },
-          ],
         });
       } else if (validatedResponse.type === 'synthesis') {
+        // Synthesis response: append user message is already done in onMutate
         session.updateState({
           sessionId: validatedResponse.sessionId,
           phase: validatedResponse.phase,
           turnCount: validatedResponse.turnCount,
           recommendation: validatedResponse.recommendation,
-          messages: [...session.messages, { role: 'user', content: variables.userMessage }],
         });
       }
+    },
+    onError: () => {
+      // Rollback optimistic user message on error
+      session.removeLastMessage();
     },
     ...options,
   });

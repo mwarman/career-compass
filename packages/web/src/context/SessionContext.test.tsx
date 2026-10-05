@@ -154,5 +154,58 @@ describe('SessionContext', () => {
 
       expect(result.current.synthesisReady).toBe(true);
     });
+
+    it('should append message via appendMessage action', () => {
+      const { result } = renderHook(() => useSession(), { wrapper });
+
+      expect(result.current.messages).toHaveLength(0);
+
+      act(() => {
+        result.current.appendMessage({ role: 'user', content: 'Hello' });
+      });
+
+      expect(result.current.messages).toHaveLength(1);
+      expect(result.current.messages[0]).toEqual({ role: 'user', content: 'Hello' });
+
+      act(() => {
+        result.current.appendMessage({ role: 'assistant', content: 'Hi there!' });
+      });
+
+      expect(result.current.messages).toHaveLength(2);
+      expect(result.current.messages[1]).toEqual({ role: 'assistant', content: 'Hi there!' });
+    });
+
+    it('should remove last message via removeLastMessage action', () => {
+      const { result } = renderHook(() => useSession(), { wrapper });
+
+      // Add messages
+      act(() => {
+        result.current.appendMessage({ role: 'user', content: 'Message 1' });
+        result.current.appendMessage({ role: 'assistant', content: 'Message 2' });
+      });
+
+      expect(result.current.messages).toHaveLength(2);
+
+      // Remove last message
+      act(() => {
+        result.current.removeLastMessage();
+      });
+
+      expect(result.current.messages).toHaveLength(1);
+      expect(result.current.messages[0]).toEqual({ role: 'user', content: 'Message 1' });
+    });
+
+    it('should handle removeLastMessage on empty list gracefully', () => {
+      const { result } = renderHook(() => useSession(), { wrapper });
+
+      expect(result.current.messages).toHaveLength(0);
+
+      // Should not throw
+      act(() => {
+        result.current.removeLastMessage();
+      });
+
+      expect(result.current.messages).toHaveLength(0);
+    });
   });
 });

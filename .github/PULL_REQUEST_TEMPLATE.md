@@ -10,7 +10,7 @@
 
 _Describe the changes included in this pull request. Link to the associated [GitHub](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword) or Jira issue(s)._
 
-- see #1234
+- Closes #1234
 - Added the [...]
 - Updated the [...]
 - Fixed the [...]

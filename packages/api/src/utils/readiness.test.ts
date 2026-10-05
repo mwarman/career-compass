@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { parseReadiness } from '../readiness';
+import { parseReadiness } from './readiness';
 
 describe('parseReadiness utility', () => {
   describe('AC-01: parseReadiness() utility implementation', () => {

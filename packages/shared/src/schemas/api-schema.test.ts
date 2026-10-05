@@ -8,8 +8,8 @@ import {
   type ConversationalResponse,
   type SynthesisResponse,
   type TurnResponse,
-} from '../api-schema';
-import type { Recommendation } from '../recommendation-schema';
+} from './api-schema';
+import type { Recommendation } from './recommendation-schema';
 
 describe('TurnRequestSchema', () => {
   describe('valid inputs', () => {
